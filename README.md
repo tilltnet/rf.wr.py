@@ -22,7 +22,7 @@ Execute
 -------
 Copy the rf.wr.py to any folder on your computer and run it with:
     
-    python2.7 rf.wr.py
+    python2.7 rf.wr.py &
 
 Then open the browser on any machine in your local network and point it to 
 
