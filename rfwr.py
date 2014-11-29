@@ -7,7 +7,7 @@ def index():
 	return '''
 	<script language="javascript">
     		window.location.href = "/player"
-	</script>	
+	</script>
 	'''
 
 @route('/pause')
@@ -21,7 +21,7 @@ def pause():
 	return '''
 	<script language="javascript">
     		window.location.href = "/player"
-	</script>	
+	</script>
 	'''
 
 @route('/next')
@@ -35,7 +35,7 @@ def next():
 	return '''
 	<script language="javascript">
     		window.location.href = "/player"
-	</script>	
+	</script>
 	'''
 
 @route('/previous')
@@ -49,21 +49,21 @@ def next():
 	return '''
 	<script language="javascript">
     		window.location.href = "/player"
-	</script>	
+	</script>
 	'''
 
 @route('/comehome')
 def comehome():
-	URI = "dlna-playsingle://uuid%3A4f0d7a8e-680e-493a-9907-6e6cb772f0b4?sid=urn%3Aupnp-org%3AserviceId%3AContentDirectory&iid=0%2FFavorites%2FMyFavorites%2F30"	
+	URI = "dlna-playsingle://uuid%3A4f0d7a8e-680e-493a-9907-6e6cb772f0b4?sid=urn%3Aupnp-org%3AserviceId%3AContentDirectory&iid=0%2FFavorites%2FMyFavorites%2F30"
 	devices = raumfeld.discover()
 	if len(devices) > 0:
 		speaker = devices[0]
 		TState = speaker.curTransState
-		if str(TState) == "STOPPED":
+		if str(TState) == "STOPPED" or str(TState) == "PAUSED_PLAYBACK":
 			speaker.mute = False
 			speaker.volume = 50
 			speaker.playURI(URI)
-			player()			
+			player()
 			return 'Welcome Home!'
 	else:
 		return 'No devices found.'
@@ -81,7 +81,7 @@ def play():
 	return '''
 	<script language="javascript">
     		window.location.href = "/player"
-	</script>	
+	</script>
 	'''
 
 @route('/playURI')
@@ -95,7 +95,7 @@ def play():
 
 @post('/playURI')
 def do_play():
-	URI = request.forms.get('URI')	
+	URI = request.forms.get('URI')
 	devices = raumfeld.discover()
 	if len(devices) > 0:
 		speaker = devices[0]
@@ -105,7 +105,7 @@ def do_play():
 	return '''
 	<script language="javascript">
     		window.location.href = "/player"
-	</script>	
+	</script>
 	'''
 
 @route('/play/drwissen')
@@ -120,7 +120,7 @@ def drwissen():
 	return '''
 	<script language="javascript">
     		window.location.href = "/player"
-	</script>	
+	</script>
 	'''
 
 @route('/play/recentArtists')
@@ -135,9 +135,9 @@ def recentArtists():
 	return '''
 	<script language="javascript">
     		window.location.href = "/player"
-	</script>	
+	</script>
 	'''
-	
+
 @route('/player')
 def player():
 	return '''
@@ -148,10 +148,10 @@ def player():
 		</head>
 		<h1>
 		<a href="/previous">&#x2770;&#x2770;</a>
-		<a href="/play">    &#x27a4;</a>  
+		<a href="/play">    &#x27a4;</a>
 		<a href="/pause">&#x275a;&#x275a;</a>
-		<a href="/next">	&#x2771;&#x2771;</a>   </h1> 
-		<br> 
+		<a href="/next">	&#x2771;&#x2771;</a>   </h1>
+		<br>
 		<form action="/playURI" method="post">
 		    URI: <input name="URI" type="text" />
 		    <input value="Submit" type="submit" />
