@@ -7,6 +7,8 @@ raumfeld web remote in python
 
 rf.wr.py is a small webserver that let's you control the playback of your raumfeld system through you browser. You can also submit URIs of audio-streams. You might want to run it on a small embedded linux machine as the raspberry pi or possibly your router.
 
+rf.wr.py uses [raumfeld-python](https://github.com/tfeldmann/python-raumfeld) (with minor changes) and [bottle.py](http://bottlepy.org/docs/dev/index.html).
+
 Install
 -------
 You need to have python2.7 at least and git needs to be installed.
@@ -24,8 +26,8 @@ Copy the rf.wr.py to any folder on your computer and run it with:
 
 Then open the browser on any machine in your local network and point it to 
 
-    http://your.machine:8080/
+[http://your.machine:8080/](http://your.machine:8080/)
 
 replacing your.machine with the IP or name address of your server. For me it is:
 
-    http://musicboc.local:8080/
+[http://musicbox.local:8080/](http://musicbox.local:8080/)
