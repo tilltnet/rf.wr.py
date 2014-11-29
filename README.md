@@ -26,8 +26,8 @@ Copy the rf.wr.py to any folder on your computer and run it with:
 
 Then open the browser on any machine in your local network and point it to 
 
-[http://your.machine:8080/player](http://your.machine:8080/)
+[http://your.machine:8080/player](http://your.machine:8080/player)
 
 replacing your.machine with the IP or name address of your server. For me it is:
 
-[http://musicbox.local:8080/player](http://musicbox.local:8080/)
+[http://musicbox.local:8080/player](http://musicbox.local:8080/player)
