@@ -52,6 +52,22 @@ def next():
 	</script>	
 	'''
 
+@route('/comehome')
+def comehome():
+	URI = "dlna-playsingle://uuid%3A4f0d7a8e-680e-493a-9907-6e6cb772f0b4?sid=urn%3Aupnp-org%3AserviceId%3AContentDirectory&iid=0%2FFavorites%2FMyFavorites%2F30"	
+	devices = raumfeld.discover()
+	if len(devices) > 0:
+		speaker = devices[0]
+		TState = speaker.curTransState
+		if str(TState) == "STOPPED":
+			speaker.mute = False
+			speaker.volume = 50
+			speaker.playURI(URI)
+			player()			
+			return 'Welcome Home!'
+	else:
+		return 'No devices found.'
+
 @route('/play')
 def play():
 	devices = raumfeld.discover()
