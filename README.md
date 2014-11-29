@@ -13,7 +13,7 @@ Install
 -------
 You need to have python2.7 at least and git needs to be installed.
 
-The libraries bottly-python and raumfeld-python are required to run the server.
+The libraries bottly.py and raumfeld-python are required to run the server.
 
     pip install bottle
     pip install git+git://github.com/tilltnet/raumfeld-python
@@ -22,7 +22,7 @@ Execute
 -------
 Copy the rf.wr.py to any folder on your computer and run it with:
     
-    python2.7 rf.wr.py &
+    python2.7 rfwr.py &
 
 Then open the browser on any machine in your local network and point it to 
 
