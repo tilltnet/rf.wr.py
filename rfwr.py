@@ -1,6 +1,17 @@
 from bottle import route, run, template
 from bottle import get, post, request
 import raumfeld
+from bottle import static_file
+import os
+
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
+
+@route('/images/<filename:re:.*\.png>')
+def send_image(filename):
+    return static_file(filename, root='images/', mimetype='image/png')
+
 
 @route('/')
 def index():
@@ -140,22 +151,22 @@ def recentArtists():
 def player():
 	return '''
 		<html>
-		<head>
-		<title>rf.player</title>
-		<style type="text/css"><!--A{text-decoration:none}--></style>
-		</head>
-		<h1>
-		<a href="/previous">&#x2770;&#x2770;</a>
-		<a href="/play">    &#x27a4;</a>
-		<a href="/pause">&#x275a;&#x275a;</a>
-		<a href="/next">	&#x2771;&#x2771;</a>   </h1>
-		<br>
-		<form action="/playURI" method="post">
-		    URI: <input name="URI" type="text" />
-		    <input value="Submit" type="submit" />
-		</form>
-		<br><a href="/play/drwissen">Dradio Wissen</a>
-		<br><a href="/play/recentArtists">Zuletzt gehoerte Kuenstler</a>
+			<head>
+			<title>rf.wr.py</title>
+				<style type="text/css"><!--A{text-decoration:none}--></style>
+			</head>
+			<body>		
+				<h1>
+				<a href="/previous"><img alt="prev" src="/images/prev.png"></a><a href="/play"><img alt="play" src="/images/play.png"></a><a href="/pause"><img alt="pause" src="/images/pause.png"></a><a href="/next"><img alt="next" src="/images/next.png"></a>   
+				</h1>
+				<br>
+				<form action="/playURI" method="post">
+				    URI: <input name="URI" type="text" />
+				    <input value="Submit" type="submit" />
+				</form>
+				<br><a href="/play/drwissen">Dradio Wissen</a>
+				<br><a href="/play/recentArtists">Zuletzt gehoerte Kuenstler</a>
+			</body>
 	'''
 
 run(host='0.0.0.0', port = 8080)
