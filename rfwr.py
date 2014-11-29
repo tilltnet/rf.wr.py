@@ -54,7 +54,7 @@ def next():
 
 @route('/comehome')
 def comehome():
-	URI = "dlna-playsingle://uuid%3A4f0d7a8e-680e-493a-9907-6e6cb772f0b4?sid=urn%3Aupnp-org%3AserviceId%3AContentDirectory&iid=0%2FFavorites%2FMyFavorites%2F30"
+	URI = "http://dradio_mp3_dwissen_m.akacast.akamaistream.net/7/728/142684/v1/gnl.akacast.akamaistream.net/dradio_mp3_dwissen_m"
 	devices = raumfeld.discover()
 	if len(devices) > 0:
 		speaker = devices[0]
@@ -110,7 +110,7 @@ def do_play():
 
 @route('/play/drwissen')
 def drwissen():
-	URI = "dlna-playsingle://uuid%3A4f0d7a8e-680e-493a-9907-6e6cb772f0b4?sid=urn%3Aupnp-org%3AserviceId%3AContentDirectory&iid=0%2FFavorites%2FMyFavorites%2F30"
+	URI = "http://dradio_mp3_dwissen_m.akacast.akamaistream.net/7/728/142684/v1/gnl.akacast.akamaistream.net/dradio_mp3_dwissen_m"
 	devices = raumfeld.discover()
 	if len(devices) > 0:
 		speaker = devices[0]
