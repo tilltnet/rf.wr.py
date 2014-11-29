@@ -108,7 +108,7 @@ def drwissen():
 	'''
 
 @route('/play/recentArtists')
-def drwissen():
+def recentArtists():
 	URI = "dlna-playcontainer://uuid%3A4f0d7a8e-680e-493a-9907-6e6cb772f0b4?sid=urn%3Aupnp-org%3AserviceId%3AContentDirectory&cid=0%2FPlaylists%2FShuffles%2FRecentArtists%2F1800068248%252B%252Bde&md=0&fii=0"
 	devices = raumfeld.discover()
 	if len(devices) > 0:
