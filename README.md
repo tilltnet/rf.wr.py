@@ -20,7 +20,7 @@ The libraries bottly.py and raumfeld-python are required to run the server. If y
     
 Execute
 -------
-Copy the rf.wr.py to any folder on your computer and run it with:
+Copy the rf.wr.py and the images folder to any folder on your computer and run it with:
     
     python2.7 rfwr.py &
 
@@ -31,3 +31,16 @@ Then open the browser on any machine in your local network and point it to
 replacing your.machine with the IP or name address of your server. For me it is:
 
 [http://musicbox.local:8080/player](http://musicbox.local:8080/player)
+
+Commands
+--------
+This is a list of commands, that can be invoked. Most of the commands can be accessed through /player.
+		
+	/play
+	/pause
+	/next
+	/previous
+	/comehome - checks if playback has STOPPED, if so it sends the command to play a stream and welcomes the user home
+	/playURI - GET - let's you enter URI to stream
+	/drwissen - plays the radio station DRadio Wissen
+	/recentArtists - plays a random mix of recent artists 
