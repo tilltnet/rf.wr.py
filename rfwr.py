@@ -73,8 +73,6 @@ def play():
 	devices = raumfeld.discover()
 	if len(devices) > 0:
 		speaker = devices[0]
-		speaker.mute = False
-		speaker.volume = 60
 		speaker.play()
 	else:
 		return 'No devices found.'
