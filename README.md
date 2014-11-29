@@ -5,7 +5,7 @@ raumfeld web remote in python
 
 ![Screenshot](/rfwr.jpg)
 
-rf.wr.py is a small webserver that let's you control the playback of your raumfeld system through you browser. You can also submit URIs of audio-streams. You might want to run it on a small embedded linux machine as the raspberry pi or possibly your router.
+rf.wr.py is a small webserver that let's you control the playback of your raumfeld system through a browser. You can also submit URIs of audio-streams. You might want to run it on a small embedded linux machine as the raspberry pi or possibly your router.
 
 rf.wr.py uses [raumfeld-python](https://github.com/tfeldmann/python-raumfeld) (with minor changes) and [bottle.py](http://bottlepy.org/docs/dev/index.html).
 
