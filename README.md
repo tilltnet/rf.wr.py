@@ -16,7 +16,7 @@ You need to have python2.7 at least and git needs to be installed.
 The libraries bottly.py and raumfeld-python are required to run the server. If you installed raumfeld-python before unistall it with 'pip uninstall raumfeld'.
 
     pip install bottle
-    pip install git+git://github.com/tilltnet/raumfeld-python
+    pip install git+git://github.com/tilltnet/python-raumfeld
     
 Execute
 -------
