@@ -20,29 +20,29 @@ def read_favs(no=1):
 	counter = 0
 	URIs = []
 	Meta = []
-	for line in content:		
-		if alternater == 0:		
-			URIs.append(line) 
+	for line in content:
+		if alternater == 0:
+			URIs.append(line)
 			alternater = 1
 		else:
-			Meta.append(line) 
+			Meta.append(line)
 			alternater = 0
-		counter = counter + 1		
+		counter = counter + 1
 	URIs = [each.replace('\n', '') for each in URIs]
 	Meta = [each.replace('\n', '') for each in Meta]
-	
+
 	for i in range(1,len(URIs)):
-		if Meta[i] == '':	
-			Meta[i] = ''.join(['<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" xmlns:raumfeld="urn:schemas-raumfeld-com:meta-data/raumfeld"><container><dc:title>',URIs[i],'</dc:title></container></DIDL-Lite>'])	
-	
+		if Meta[i] == '':
+			Meta[i] = ''.join(['<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" xmlns:raumfeld="urn:schemas-raumfeld-com:meta-data/raumfeld"><container><dc:title>',URIs[i],'</dc:title></container></DIDL-Lite>'])
+
 	no = int(no) - 1
-	
+
 	trees = [ET.fromstring(each) for each in Meta]
-	namespaces = {'dc': 'http://purl.org/dc/elements/1.1/'} 
+	namespaces = {'dc': 'http://purl.org/dc/elements/1.1/'}
 	titles = [tree[0].find('dc:title', namespaces).text for tree in trees]
 
 	return no, URIs, Meta, titles
-	
+
 @route('/vol/<no>')
 def vol(no):
 	devices = raumfeld.discover()
@@ -58,7 +58,7 @@ def vol(no):
     		window.location.href = "/player"
 
 	</script>
-	'''	
+	'''
 
 @route('/images/<filename:re:.*\.*>')
 def send_image(filename):
@@ -185,7 +185,7 @@ def playURI():
 @post('/playURI')
 def do_playURI():
 	URI = request.forms.get('URI')
-	URIMeta = ''.join(['<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" xmlns:raumfeld="urn:schemas-raumfeld-com:meta-data/raumfeld"><container><dc:title>',URI,'</dc:title></container></DIDL-Lite>'])	
+	URIMeta = ''.join(['<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" xmlns:raumfeld="urn:schemas-raumfeld-com:meta-data/raumfeld"><container><dc:title>',URI,'</dc:title></container></DIDL-Lite>'])
 	devices = raumfeld.discover()
 	if len(devices) > 0:
 		speaker = devices[l_zone]
@@ -231,7 +231,7 @@ def recentArtists():
 @route('/fav/<no>')
 def fav(no):
 	favs = read_favs(no)
-	no = favs[0]	
+	no = favs[0]
 	URIs = favs[1]
 	Meta = favs[2]
 	if len(URIs) == 0:
@@ -245,7 +245,7 @@ def fav(no):
 		speaker = devices[l_zone]
 		speaker.playURI(favURI, favMeta)
 	else:
-		return 'No devices found.'	
+		return 'No devices found.'
 	return '''
 	<script language="javascript">
     		window.location.href = "/player"
@@ -255,14 +255,14 @@ def fav(no):
 @route('/setfav/<no>')
 def setfav(no):
 	favs = read_favs(no)
-	no = favs[0]	
+	no = favs[0]
 	URIs = favs[1]
-	Meta = favs[2]	
+	Meta = favs[2]
 	if len(URIs) == 0:
 		return 'No Favorites have been set yet. Use /addfav to add a favorite.'
 	elif len(URIs) <= no:
 		return 'This favorite has not been set yet. Use /addfav to add a favorite.'
-	devices = raumfeld.discover()	
+	devices = raumfeld.discover()
 	if len(devices) > 0:
 		speaker = devices[l_zone]
 		URIs[no] = speaker.currentURI()
@@ -273,12 +273,12 @@ def setfav(no):
 	for i in range(0,len(URIs)):
 		out_list.append(URIs[i])
 		out_list.append(Meta[i])
-	with open('favorites','w') as f:	
+	with open('favorites','w') as f:
 		for item in out_list:
   			f.write("%s\n" % item)
 	return '''
 	<script language="javascript">
-		window.setInterval(function() window.location.href = "/player", 7000);
+		window.setInterval(function() window.location.href = "/player", 10);
 	</script>
 	'''
 
@@ -298,7 +298,7 @@ def addfav():
 	for i in range(0,len(URIs)):
 		out_list.append(URIs[i])
 		out_list.append(Meta[i])
-	with open('favorites','w') as f:	
+	with open('favorites','w') as f:
 		for item in out_list:
   			f.write("%s\n" % item)
 	return '''
@@ -306,8 +306,8 @@ def addfav():
 	<script language="javascript">
     		window.location.href = "/player"
 	</script>
-	'''	
-		
+	'''
+
 @route('/info')
 def info():
 	devices = raumfeld.discover()
@@ -318,16 +318,16 @@ def info():
 		trackURI = speaker.trackURI()
 		trackMeta = speaker.trackMetaData()
 	else:
-		return 'No devices found.'	
+		return 'No devices found.'
 
-	print(type(curURI))	
+	print(type(curURI))
 	return template('''
 		<html>
 			<body>
-				
+
 				CurrentURI:<br> {{curURI}} <br> <br>
 				CurrentMetaData:<br> {{curMeta}}<br> <br>
-				
+
 				TrackURI:<br> {{trackURI}} <br> <br>
 				TrackMetaData:<br> {{trackMeta}}<br> <br>
 
@@ -342,69 +342,11 @@ def info():
 def player():
 	favs = read_favs()
 	URIs = favs[1]
-	Meta = favs[2]	
+	Meta = favs[2]
 	fav_count = range(1,len(URIs) + 1)
 	titles = favs[3]
-	return template(
-		'''
-		<html>
-			<head>
-				<title>rf.wr.py</title>
-				<style type="text/css"><!--A{text-decoration:none}--></style>
-				<link rel="icon" href="/images/play.png">
-			</head>
-			<body>
+	return template('player', fav_count = fav_count, titles = titles)
 
-<table cellpadding="0" border="0" cellspacing="0">
-  <tr>
-    <td><a href="/prev"><img alt=" " src="images/playprevpausenext_0_0.png" style="width: 196px;  height: 155px; border-width: 0px;"></td>
-    <td><a href="/play"><img alt=" " src="images/playprevpausenext_0_1.png"  style="width: 124px; height: 155px; border-width: 0px;"></a></td>
-    <td><a href="/pause"><img alt=" " src="images/playprevpausenext_0_2.png"  style="width: 123px; height: 155px; border-width: 0px;"></a></td>
-    <td><a href="/next"><img alt=" " src="images/playprevpausenext_0_3.png" style="width: 199px;  height: 155px; border-width: 0px;"></td>
-</tr>
-
-</table>
-
-				
-				<table cellpadding="0" border="0" cellspacing="0">
-				  <tr>
-				    <td><img alt=" " src="images/slice_0_0.gif" style="width: 63px;  height: 98px; border-width: 0px;"></td>
-				    <td><a href="/vol/25"><img alt=" " src="images/slice_0_1.gif"  style="width: 41px; height: 98px; border-width: 0px;"></a></td>
-				    <td><a href="/vol/30"><img alt=" " src="images/slice_0_2.gif"  style="width: 42px; height: 98px; border-width: 0px;"></a></td>
-				    <td><a href="/vol/35"><img alt=" " src="images/slice_0_3.gif"  style="width: 42px; height: 98px; border-width: 0px;"></a></td>
-				    <td><a href="/vol/40"><img alt=" " src="images/slice_0_4.gif"  style="width: 41px; height: 98px; border-width: 0px;"></a></td>
-				    <td><a href="/vol/45"><img alt=" " src="images/slice_0_5.gif"  style="width: 42px; height: 98px; border-width: 0px;"></a></td>
-				    <td><a href="/vol/50"><img alt=" " src="images/slice_0_6.gif"  style="width: 43px; height: 98px; border-width: 0px;"></a></td>
-				    <td><a href="/vol/55"><img alt=" " src="images/slice_0_7.gif"  style="width: 44px; height: 98px; border-width: 0px;"></a></td>
-				    <td><a href="/vol/60"><img alt=" " src="images/slice_0_8.gif"  style="width: 40px; height: 98px; border-width: 0px;"></a></td>
-				    <td><a href="/vol/65"><img alt=" " src="images/slice_0_9.gif"  style="width: 42px; height: 98px; border-width: 0px;"></a></td>
-				    <td><a href="/vol/70"><img alt=" " src="images/slice_0_10.gif"  style="width: 43px; height: 98px; border-width: 0px;"></a></td>
-				    <td><a href="/vol/75"><img alt=" " src="images/slice_0_11.gif"  style="width: 41px; height: 98px; border-width: 0px;"></a></td>
-				    <td><a href="/vol/80"><img alt=" " src="images/slice_0_12.gif"  style="width: 42px; height: 98px; border-width: 0px;"></a></td>
-				    <td><a href="/vol/85"><img alt=" " src="images/slice_0_13.gif"  style="width: 42px; height: 98px; border-width: 0px;"></a></td>
-				    <td><a href="/vol/90"><img alt=" " src="images/slice_0_14.gif" style="width: 34px;  height: 98px; border-width: 0px;"></a></td>
-				</tr>
-
-				</table>
-				<br>
-				<form action="/playURI" method="post">
-				    URI: <input name="URI" type="text" />
-				    <input value="Submit" type="submit" />
-				</form>
-				<br>
-				<a href= "/addfav">Add Favorite</a><br>
-				<table width = "600"> <tr><td>
-				<ul>
-				%for fav in fav_count:		
-					<li><a href="/fav/{{fav}}">{{titles[fav-1]}}</a> - <a href="/setfav/{{fav}}">Set</a></li>
-				%end
-				</ul>
-				</td></tr></table>
-				<br><a href="/zones">Change Music Zone</a>
-				<br><a href="/info">Show Info</a>
-			</body>	
-	''', fav_count = fav_count, titles = titles)
-	
 
 #debug(True)
 run(host='0.0.0.0', port = 8080)#, reloader = True)
