@@ -35,11 +35,11 @@ Execute
 -------
 Change to the folder you just created with 'cd rf.wr.py-master' and run:
 
-    python2.7 rfwr.py & 
+	python2.7 rfwr.py & 
     
 Or, if you want to start the server in the background and possible through ssh, use:
-   
-   nohup python2.7 rfwr.py &
+
+	nohup python2.7 rfwr.py &
 
 "It's not working!" If you encounter dependency errors go back to pip installing the missing packages. The used libraries are not that exotic and should be already available on most systems.
 
