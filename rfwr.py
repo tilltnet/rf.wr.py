@@ -31,9 +31,9 @@ def read_favs(no=1):
 	URIs = [each.replace('\n', '') for each in URIs]
 	Meta = [each.replace('\n', '') for each in Meta]
 	
-	#for i in range(1,len(URIs)):
-	#	if Meta[i] == '':	
-	#		Meta[i] = ''.join(['<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" xmlns:raumfeld="urn:schemas-raumfeld-com:meta-data/raumfeld"><container><dc:title>',URIs[i],'</dc:title></container></DIDL-Lite>'])	
+	for i in range(1,len(URIs)):
+		if Meta[i] == '':	
+			Meta[i] = ''.join(['<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" xmlns:raumfeld="urn:schemas-raumfeld-com:meta-data/raumfeld"><container><dc:title>',URIs[i],'</dc:title></container></DIDL-Lite>'])	
 	
 	no = int(no) - 1
 	
@@ -406,5 +406,5 @@ def player():
 	''', fav_count = fav_count, titles = titles)
 	
 
-debug(True)
-run(host='0.0.0.0', port = 8080, reloader = True)
+#debug(True)
+run(host='0.0.0.0', port = 8080)#, reloader = True)
