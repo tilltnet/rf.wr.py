@@ -65,9 +65,9 @@ This is a list of commands, that can be invoked.
 
 	/info - Shows current transport info as CurrentURI, CurrentURIMetaData, TrackURI, TrackMetaData.
 	/zones - Let's you choose your music zone.
-	/zone/<no> - Lets you set the zone to control.
+	/zone/<no> - Let's you set the zone to control.
 	/addfav - Add a favorite.
-	/setfav - Overwrite a previously set favorite.
+	/setfav/<no> - Overwrite a previously set favorite.
 	/fav/<no> - Play a favorite.
 	
 	/comehome - Checks if playback has STOPPED, if so it sends the command to play a stream and welcomes the user home.
