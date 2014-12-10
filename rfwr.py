@@ -277,8 +277,9 @@ def setfav(no):
 		for item in out_list:
   			f.write("%s\n" % item)
 	return '''
+	Favorite has been set.
 	<script language="javascript">
-		window.setInterval(function() window.location.href = "/player", 10);
+    		window.location.href = "/player"
 	</script>
 	'''
 
