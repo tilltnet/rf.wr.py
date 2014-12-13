@@ -69,8 +69,12 @@ Commands
 This is a list of commands, that can be invoked.
 
 ```
-/player - This is the default address and most of the commands and functions can be accessed through its UI. You can send simple control commands (play, pause, volume, etc.), set/ play favorites and access the podcast functionality.
+/player
+```
 
+This is the default address and most of the commands and functions can be accessed through its UI. You can send simple control commands (play, pause, volume, etc.), set/ play favorites and access the podcast functionality.
+
+```
 # Simple control
 /play
 /pause
