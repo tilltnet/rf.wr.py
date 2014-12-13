@@ -345,33 +345,34 @@ def fav(no):
 
 @route('/setfav/<no>')
 def setfav(no):
-        favs = read_favs(no)
-        no = favs[0]
-        URIs = favs[1]
-        Meta = favs[2]
-        if len(URIs) == 0:
-                return 'No Favorites have been set yet. Use /addfav to add a favorite.'
-        elif len(URIs) <= no:
-                return 'This favorite has not been set yet. Use /addfav to add a favorite.'
-        devices = raumfeld.discover(5)
-        if len(devices) > 0:
-                speaker = devices[l_zone]
-                URIs[no] = speaker.currentURI()
-                Meta[no] = speaker.currentURIMetaData()
-        else:
-                return 'No devices found.'
-        out_list = []
-        for i in range(0,len(URIs)):
-                out_list.append(URIs[i])
-                out_list.append(Meta[i])
-        with open('favorites','w') as f:
-                for item in out_list:
-                        f.write("%s\n" % item)
-        return '''
-        <script language="javascript">
-                window.location.href = "/player"
-        </script>
-        '''
+	favs = read_favs(no)
+	no = favs[0]
+	URIs = favs[1]
+	Meta = favs[2]
+	if len(URIs) == 0:
+		return 'No Favorites have been set yet. Use /addfav to add a favorite.'
+	elif len(URIs) <= no:
+		return 'This favorite has not been set yet. Use /addfav to add a favorite.'
+	devices = raumfeld.discover()
+	if len(devices) > 0:
+		speaker = devices[l_zone]
+		URIs[no] = speaker.currentURI()
+		Meta[no] = speaker.currentURIMetaData()
+	else:
+		return 'No devices found.'
+	out_list = []
+	for i in range(0,len(URIs)):
+		out_list.append(URIs[i])
+		out_list.append(Meta[i])
+	with open('favorites','w') as f:
+		for item in out_list:
+  			f.write("%s\n" % item)
+	return '''
+	Favorite has been set.
+	<script language="javascript">
+    		window.location.href = "/player"
+	</script>
+	'''
 
 @route('/addfav')
 def addfav():

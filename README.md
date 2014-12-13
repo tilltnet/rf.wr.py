@@ -1,13 +1,13 @@
-rf.wr.py
+rf.wr(.py)
 ========
 
-raumfeld web remote in python
+a raumfeld web remote in python
 
 ![Screenshot](/rfwr.png)
 
-rf.wr.py is a small webserver that let's you control the playback of your raumfeld system through a browser. You can submit URIs of audio-streams and -files, favorites of currently playing content can be set (These favorites differ from the one in the official Raumfeld App!). You might want to run rf.wr.py on a small embedded linux machine as the raspberry pi or possibly your router.
+rf.wr is a small webserver that let's you control the playback of your raumfeld system through a browser. You can submit URIs of audio-streams and -files, favorites of currently playing content can be set (These favorites differ from the one in the official Raumfeld App!). You might want to run rf.wr on a small embedded linux machine as the raspberry pi or possibly your router.
 
-rf.wr.py uses [raumfeld-python](https://github.com/tfeldmann/python-raumfeld) (with minor changes) and [bottle.py](http://bottlepy.org/docs/dev/index.html).
+rf.wr uses [raumfeld-python](https://github.com/tfeldmann/python-raumfeld) (with minor changes) and [bottle.py](http://bottlepy.org/docs/dev/index.html).
 
 Install
 -------
@@ -18,11 +18,11 @@ The libraries bottly.py and raumfeld-python are required to run the server. If y
     pip install bottle
     pip install git+git://github.com/tilltnet/python-raumfeld
     
-Now to download rf.wr.py: Change to your desired folder.
+Now to download rf.wr: Change to your desired folder.
 
 	cd /home/user/somewhere/
 	
-wget and bzip2 the files from github.
+wget and unzip the files from github.
 
 	wget https://github.com/tilltnet/rf.wr.py/archive/master.zip
 	unzip master.zip
