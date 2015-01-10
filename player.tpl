@@ -9,6 +9,7 @@ type="text/css">
  			margin: 0px auto;
 width: 642px;
  		}
+     td.foot{font-size: 9pt;}
  		</style>
 		                <script language=javascript>
 
@@ -106,7 +107,7 @@ border-width: 0px"
   		<table width = "642" bgcolor = "#c4f0fc">
   		<tr>
 				<td><br><a
- href="/zones">Change Music Zone</a></td>
+ href="/zones">Music Zone Manager</a></td>
   			<td align =
 				"right"><br><a
  href="/info">Show Info</a></td></tr>
@@ -237,6 +238,11 @@ border-width: 0px"
 		</tr>
 
 		</table>
+    <table width = "642" bgcolor = "#eeeeee">
+    <tr>
+      <td><br></td>
+      <td class="foot" align = "right"><a href="https://github.com/tilltnet/rf.wr.py/blob/master/LICENSE">License / GPL</a> - <a href="https://github.com/tilltnet/rf.wr.py">github</a></td></tr>
+    </table>
  </div>
 
 <script language="javascript" type="text/javascript">
@@ -379,6 +385,5 @@ images = eval (images_array_name);
 
   }
  </script>
-
 		</body>
  </html>

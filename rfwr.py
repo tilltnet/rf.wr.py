@@ -6,7 +6,9 @@ from bottle import static_file
 import os
 import collections
 import urllib2
-
+import re
+from urlparse import urlparse
+from random import randint
 
 ### Define your music zone here. The zones are alpahbetically sorted by names (0 = A-Zone, 1 = B-Zone)
 l_zone = 0
@@ -82,28 +84,219 @@ def zone(no):
         l_zone = int(no)
         return '''
         <script language="javascript">
-                window.location.href = "/player"
+                window.location.href = "/zones"
 
         </script>
 
         '''
 
+
+@route('/drop_room/<name>')
+def drop_room(name):
+        global l_zone
+        devices = raumfeld.discover()
+        if len(devices) < 1:
+                return 'No devices found.'
+        hostip = re.findall(r'[0-9]+(?:\.[0-9]+){3}', urlparse(devices[l_zone].location).netloc)
+
+        zones = [device.friendly_name for device in devices]
+        print(zones)
+        file = urllib2.urlopen('http://' + hostip[0] + ':47365/getZones')
+        data = file.read()
+        file.close()
+        tree = ET.fromstring(data)
+
+        rf_zones = sorted(tree[0].findall('zone'), key = lambda device: device[0].attrib['name'])
+
+        drop_room_base = 'http://' + hostip[0] + ':47365/dropRoomJob?roomUDN='
+        rooms = rf_zones[l_zone].findall('room')
+        for room in rooms:
+            if room.attrib['name'] == str(name):
+                udn_to_drop = room.attrib['udn']
+        urllib2.urlopen(drop_room_base + udn_to_drop).read()
+        return '''
+        Room dropped.
+        <script language="javascript">
+                setTimeout("location.href = '/zones';",1500);
+        </script>
+        '''
+
+@route('/add_room/<name>')
+def add_room(name):
+        global l_zone
+        devices = raumfeld.discover()
+        if len(devices) < 1:
+                return 'No devices found.'
+        hostip = re.findall(r'[0-9]+(?:\.[0-9]+){3}', urlparse(devices[l_zone].location).netloc)
+
+        file = urllib2.urlopen('http://' + hostip[0] + ':47365/getZones')
+        data = file.read()
+        file.close()
+        tree = ET.fromstring(data)
+
+        if devices[0].model_description == 'Virtual Media Player':
+                zones = [device.friendly_name for device in devices]
+                _, _, path, _, _, _ = urlparse(devices[l_zone].location)
+                _, zone_udn = path.replace('.xml', '').rsplit('/',1)
+                rooms = tree[1].findall('room')
+
+        else:
+                zone_udn = 'aaaaaaaa-bbbb-cccc-eeee-ffffffffffff'
+                rooms = tree[0].findall('room')
+
+
+        add_room_base = 'http://' + hostip[0] + ':47365/connectRoomToZone?'
+        for room in rooms:
+            if room.attrib['name'] == str(name):
+                udn_to_add = room.attrib['udn']
+        urllib2.urlopen(add_room_base + 'zoneUDN=uuid:' + zone_udn + '&roomUDN=' + udn_to_add).read()
+        return template('''
+        Room added.
+        <script language="javascript">
+                setTimeout("location.href = '/zones';",1500);
+        </script>
+        ''')
+
+@route('/new_zone/<name>')
+def new_zone(name):
+        global l_zone
+        devices = raumfeld.discover()
+        if len(devices) < 1:
+                return 'No devices found.'
+        hostip = re.findall(r'[0-9]+(?:\.[0-9]+){3}', urlparse(devices[l_zone].location).netloc)
+
+        file = urllib2.urlopen('http://' + hostip[0] + ':47365/getZones')
+        data = file.read()
+        file.close()
+        tree = ET.fromstring(data)
+
+
+        if devices[0].model_description == 'Virtual Media Player':
+                zones = [device.friendly_name for device in devices]
+                zone_udn = 'aaaaaaaa-bbbb-cccc-eeee-' + str(randint(100000000000,9999999999999))
+                ass_rooms = [tree[0][i].findall('room') for i in range(0,len(tree[0]))]
+                if len(tree) > 1:
+                        unass_rooms = tree[1].findall('room')
+                        ass_rooms.append(unass_rooms)
+                rooms = [room for sublist in ass_rooms for room in sublist]
+
+        else:
+                zone_udn = 'aaaaaaaa-bbbb-cccc-eeee-ffffffffffff'
+                rooms = tree[0].findall('room')
+
+
+        add_room_base = 'http://' + hostip[0] + ':47365/connectRoomToZone?'
+        for room in rooms:
+            if room.attrib['name'] == str(name):
+                udn_to_add = room.attrib['udn']
+        urllib2.urlopen(add_room_base + 'zoneUDN=uuid:' + zone_udn + '&roomUDN=' + udn_to_add).read()
+        return template('''
+        New zone created.
+        <script language="javascript">
+                setTimeout("location.href = '/zones';",2000);
+        </script>
+        ''')
+
 @route('/zones')
 def zones():
         global l_zone
-        devices = raumfeld.discover(5)
+        devices = raumfeld.discover()
+        if len(devices) < 1:
+                return 'No devices found.'
         zones = [device.friendly_name for device in devices]
-        print(zones)
+
+        if l_zone > len(devices) - 1:
+                l_zone = 0
+
+        hostip = re.findall(r'[0-9]+(?:\.[0-9]+){3}', urlparse(devices[l_zone].location).netloc)
+
+        file = urllib2.urlopen('http://' + hostip[0] + ':47365/getZones')
+        data = file.read()
+        file.close()
+        tree = ET.fromstring(data)
+        rf_zones = sorted(tree[0].findall('zone'), key = lambda device: device[0].attrib['name'])
+        zone_nos = range(0, len(devices))
+        active_zone = [no == l_zone for no in zone_nos]
+        active_zone = [re.sub('True', 'Active', str(no)) for no in active_zone]
+        active_zone = [re.sub('False', 'Activate', str(no)) for no in active_zone]
+
         return template('''
         <html>
-        Active Zone: {{l_zone}}<br>
-        %for i in range(0,len(zones)):
-                {{i}}: <a href="/zone/{{i}}">{{zones[i]}}</a><br>
+        <head>
+                <title>rf.wr.py</title>
+ 		<style type="text/css">
+ 		<!--A{text-decoration:none}-->
+                div.activation{
+                        align: right;
+                }
+ 		a.Active{
+                           pointer-events: none;
+                           cursor: default;
+                           color: #D4C311;
+ 		}
+ 		a.room_Activate{
+                           pointer-events: none;
+                           cursor: default;
+                           color: black;
+ 		}
+ 		div{
+ 			margin: 0px auto; width: 250px;
+                        }
+ 		div.zone_Activate{
+                        background-color:#bdbbea;
+                        padding: 15px 15px 15px 15px;
+                        }
+
+                div.zone_Active{
+                        background-color:#bdffea;
+                        padding: 15px 15px 15px 15px;
+                        border: 1px solid;
+                        }
+                div.unassigned{
+                        background-color:#66FA7F;
+                        padding: 15px 15px 15px 15px;
+                        }
+ 		</style>
+ 	</head>
+        <div><h1>Zone Manager <a href="/zones" title="Refresh">&#10226;</a> </h1>
+        %if tree[0].tag == 'zones':
+                %for i in range(0, len(tree[0])):
+                        <div class = "zone_{{active_zone[i]}}">
+                        Zone {{i}}: {{zones[i]}} <div align="right" class="activation"><a class="{{active_zone[i]}}" href="/zone/{{i}}">{{active_zone[i]}}</a></div>
+                        %for j in range(0, len(tree[0][i])):
+                            <div class = "room">
+                                <a class="room_{{active_zone[i]}}" href="/drop_room/{{rf_zones[i][j].attrib['name']}}">- {{rf_zones[i][j].attrib['name']}}</a>
+
+                                </div>
+                        %end
+                        </div>
+                %end
+                       Active Zone: {{l_zone}}<br>
+                %if len(tree) > 1:
+                    <div class = "unassigned"> Unassigned:
+                    %for i in range(0, len(tree[1])):
+                        <div class = "room"><a href="/new_zone/{{tree[1][i].attrib['name']}}">{{tree[1][i].attrib['name']}}</a><a href="/add_room/{{tree[1][i].attrib['name']}}">[+]</a></div>
+                    %end
+                    </div>
+                %end
+        %else:
+                    <div class = "unassigned"> Unassigned:
+                    %for i in range(0, len(tree[0])):
+                        <div class = "room"><a href="/new_zone/{{tree[0][i].attrib['name']}}">{{tree[0][i].attrib['name']}}</a><a href="/add_room/{{tree[0][i].attrib['name']}}">[+]</a></div>
+                    %end
+                    </div>
         %end
+        <br><br>
+        Usage:
+        <ul>
+        <li>Choose active zone by clicking on 'Activate'.</li>
+        <li>Remove Rooms from active zone by clicking on them.</li>
+        <li>Unassigned rooms can be added [+] to the active zone or used to create a new room, by clicking on the name.</li>
+        </ul>
+        <br><a href="/player">Back to Player</a>
+        </div>
         </html>
-        ''', zones=zones, l_zone=l_zone)
-
-
+        ''', zones=zones, l_zone=l_zone, tree=tree, rf_zones = rf_zones, active_zone=active_zone)
 
 @route('/pause')
 def pause():
@@ -259,7 +452,7 @@ def playPodcastPost():
         else:
                 return 'No devices found.'
         return '''
-        <script language="javascript">
+        <script language="javascript"> 
                         window.location.href = "/player"
         </script>
         '''
