@@ -10,14 +10,12 @@ import re
 from urlparse import urlparse
 from random import randint
 
-### Define your music zone here. The zones are alpahbetically sorted by names (0 = A-Zone, 1 = B-Zone)
+### Define your default music zone here. The zones are alpahbetically sorted by names (0 = A-Zone, 1 = B-Zone)
 l_zone = 0
 
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
 os.chdir(dname)
-
-
 
 def read_favs(no=1):
         with open('favorites', 'a+') as f:
@@ -87,9 +85,24 @@ def zone(no):
                 window.location.href = "/zones"
 
         </script>
-
         '''
 
+def zone_basics(devices):
+        global l_zone
+        hostip = re.findall(r'[0-9]+(?:\.[0-9]+){3}', urlparse(devices[l_zone].location).netloc)
+
+        if devices[0].model_description == 'Virtual Media Player':
+            zones = [device.friendly_name for device in devices]
+        else:
+            zones = []
+
+        file = urllib2.urlopen('http://' + hostip[0] + ':47365/getZones')
+        data = file.read()
+        file.close()
+        tree = ET.fromstring(data)
+
+        rf_zones = sorted(tree[0].findall('zone'), key = lambda device: device[0].attrib['name'])
+        return hostip, zones, tree, rf_zones
 
 @route('/drop_room/<name>')
 def drop_room(name):
@@ -97,16 +110,7 @@ def drop_room(name):
         devices = raumfeld.discover()
         if len(devices) < 1:
                 return 'No devices found.'
-        hostip = re.findall(r'[0-9]+(?:\.[0-9]+){3}', urlparse(devices[l_zone].location).netloc)
-
-        zones = [device.friendly_name for device in devices]
-        print(zones)
-        file = urllib2.urlopen('http://' + hostip[0] + ':47365/getZones')
-        data = file.read()
-        file.close()
-        tree = ET.fromstring(data)
-
-        rf_zones = sorted(tree[0].findall('zone'), key = lambda device: device[0].attrib['name'])
+        hostip, zones, tree, rf_zones = zone_basics(devices)
 
         drop_room_base = 'http://' + hostip[0] + ':47365/dropRoomJob?roomUDN='
         rooms = rf_zones[l_zone].findall('room')
@@ -127,12 +131,8 @@ def add_room(name):
         devices = raumfeld.discover()
         if len(devices) < 1:
                 return 'No devices found.'
-        hostip = re.findall(r'[0-9]+(?:\.[0-9]+){3}', urlparse(devices[l_zone].location).netloc)
 
-        file = urllib2.urlopen('http://' + hostip[0] + ':47365/getZones')
-        data = file.read()
-        file.close()
-        tree = ET.fromstring(data)
+        hostip, zones, tree, _ = zone_basics(devices)
 
         if devices[0].model_description == 'Virtual Media Player':
                 zones = [device.friendly_name for device in devices]
@@ -163,13 +163,8 @@ def new_zone(name):
         devices = raumfeld.discover()
         if len(devices) < 1:
                 return 'No devices found.'
-        hostip = re.findall(r'[0-9]+(?:\.[0-9]+){3}', urlparse(devices[l_zone].location).netloc)
 
-        file = urllib2.urlopen('http://' + hostip[0] + ':47365/getZones')
-        data = file.read()
-        file.close()
-        tree = ET.fromstring(data)
-
+        hostip, zones, tree, _ = zone_basics(devices)
 
         if devices[0].model_description == 'Virtual Media Player':
                 zones = [device.friendly_name for device in devices]
@@ -203,18 +198,10 @@ def zones():
         devices = raumfeld.discover()
         if len(devices) < 1:
                 return 'No devices found.'
-        zones = [device.friendly_name for device in devices]
-
         if l_zone > len(devices) - 1:
                 l_zone = 0
+        hostip, zones, tree, rf_zones = zone_basics(devices)
 
-        hostip = re.findall(r'[0-9]+(?:\.[0-9]+){3}', urlparse(devices[l_zone].location).netloc)
-
-        file = urllib2.urlopen('http://' + hostip[0] + ':47365/getZones')
-        data = file.read()
-        file.close()
-        tree = ET.fromstring(data)
-        rf_zones = sorted(tree[0].findall('zone'), key = lambda device: device[0].attrib['name'])
         zone_nos = range(0, len(devices))
         active_zone = [no == l_zone for no in zone_nos]
         active_zone = [re.sub('True', 'Active', str(no)) for no in active_zone]
@@ -223,10 +210,10 @@ def zones():
         return template('''
         <html>
         <head>
-                <title>rf.wr.py</title>
+        <title>rf.wr.py</title>
  		<style type="text/css">
  		<!--A{text-decoration:none}-->
-                div.activation{
+        div.activation{
                         align: right;
                 }
  		a.Active{
@@ -452,7 +439,7 @@ def playPodcastPost():
         else:
                 return 'No devices found.'
         return '''
-        <script language="javascript"> 
+        <script language="javascript">
                         window.location.href = "/player"
         </script>
         '''

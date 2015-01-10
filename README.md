@@ -5,12 +5,18 @@ a raumfeld web remote in python
 
 ![Screenshot](/rfwr.png)
 
-rf.wr is a small webserver that let's you control the playback of your raumfeld system through a browser. You can submit URIs of audio-streams and -files, favorites of currently playing content can be set (These favorites differ from the one in the official Raumfeld App!) and there is a rudimentary support for podcast playback. You might want to run rf.wr on a small embedded linux machine as the raspberry pi or possibly your router.
+-	Stream and save audio addresses (mp3, ogg, etc.), favorites and podcasts.
+-	Room Management (Update: 11.01.2015).
+-	Automation friendly through http commands.
+
+rf.wr is a small webserver that let's you control the playback of your raumfeld system through a browser. You can submit URIs of audio-streams and -files, favorites of currently playing content can be set (These favorites differ from the one in the official Raumfeld App!) and there is a rudimentary support for podcast playback. **Update(11.01.2015): The newest version includes a Music Zone Manager and supports http commands for building and changing music zones.** You might want to run rf.wr on a small embedded linux machine as the raspberry pi or possibly your router.
 
 rf.wr uses [raumfeld-python](https://github.com/tfeldmann/python-raumfeld) (with minor changes) and [bottle.py](http://bottlepy.org/docs/dev/index.html).
 
 Install
 -------
+
+*These instructions should basically work on most GNU/Linux and MacOSX Systems. With python installed it is possible to run rf.wr on a Windows machine (untestet!).*
 
 You need to have python2.7 at least and git needs to be installed.
 
@@ -74,8 +80,9 @@ This is a list of commands, that can be invoked.
 
 This is the default address and most of the commands and functions can be accessed through its UI. You can send simple control commands (play, pause, volume, etc.), set/ play favorites and access the podcast functionality.
 
+###Simple control
+
 ```
-# Simple control
 /play
 /pause
 /next
@@ -83,22 +90,37 @@ This is the default address and most of the commands and functions can be access
 /playURI - GET - let's you enter URI to stream
 /vol/<no> - Set volume with <no> ranging between 0 and 100 (everything above 90 might be critical!).
 /info - Shows current transport info as CurrentURI, CurrentURIMetaData, TrackURI, TrackMetaData.
+```
+###Music Zones
 
-# Music Zones
-/zones - Let's you choose your music zone.
-/zone/<no> - Let's you set the zone to control.
+```
+/zones - Let's you choose and modify your music zones.
+/zone/<no> - Set the 'Active' zone. <no> is a number (see /zones to get music zone numbers).
+/new_zone/<room-name> - Create a new room by providing the name of the room to use.
+/add_room/<room-name> - Add a room to the active music zone.
+/drop_room - Drop a room from the active music zone.
+```
 
-# Favorites
+###Favorites
+
+```
 /addfav - Add a favorite.
 /setfav/<no> - Overwrite a previously set favorite.
 /fav/<no> - Play a favorite.
-
-#
 /playPodcast
-/playPdocast and /addPodcast - HTTP POST METHOD - accept 'feed_url' parameter
+/playPdocast and
+/addPodcast - HTTP POST METHOD - accept 'feed_url' parameter
+```
 
-# Special
+###Special (These might be dropped soon.)
+```
 /comehome - Checks if playback has STOPPED, if so it sends the command to play a stream and welcomes the user home.
 /drwissen - Plays the radio station DRadio Wissen.
 /recentArtists - Plays a random mix of recent artists.
 ```
+
+##To Do List
+- Podcast delete feature
+- Room Profiles
+- Code Clean-UP!!!
+- Expand deployment options.
