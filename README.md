@@ -20,7 +20,7 @@ Install
 
 You need to have python2.7 at least and git needs to be installed.
 
-The libraries bottly.py and raumfeld-python are required to run the server. If you installed raumfeld-python before unistall it with 'pip uninstall raumfeld'. Then run the following commands to install both libraries.
+The libraries bottle.py and raumfeld-python are required to run the server. If you installed raumfeld-python before unistall it with 'pip uninstall raumfeld'. Then run the following commands to install both libraries.
 
 ```
 pip install bottle
@@ -72,13 +72,16 @@ replacing your.machine with the IP or name address of your server. For me it is:
 Commands
 --------
 
-This is a list of commands, that can be invoked.
+This is a list of commands, that can be invoked through http get and post
+requests, but first of all the following command gives you a gui to access all
+features:
 
 ```
 /player
 ```
 
-This is the default address and most of the commands and functions can be accessed through its UI. You can send simple control commands (play, pause, volume, etc.), set/ play favorites and access the podcast functionality.
+This is the default address and most of the commands and functions can be accessed through its UI. You can send simple control commands (play, pause, volume, etc.), set/ play favorites and access the podcast functionality. The music zone management has
+a seperate UI.
 
 ###Simple control
 
@@ -88,8 +91,8 @@ This is the default address and most of the commands and functions can be access
 /next
 /previous
 /playURI - GET - let's you enter URI to stream
-/vol/<no> - Set volume with <no> ranging between 0 and 100 (everything above 90 might be critical!).
-/info - Shows current transport info as CurrentURI, CurrentURIMetaData, TrackURI, TrackMetaData.
+/vol/<no> - Set volume with <no> ranging between 0 and 100 (careful!).
+/info - Shows current transport info (CurrentURI, CurrentURIMetaData, TrackURI, TrackMetaData).
 ```
 ###Music Zones
 
@@ -98,7 +101,7 @@ This is the default address and most of the commands and functions can be access
 /zone/<no> - Set the 'Active' zone. <no> is a number (see /zones to get music zone numbers).
 /new_zone/<room-name> - Create a new room by providing the name of the room to use.
 /add_room/<room-name> - Add a room to the active music zone.
-/drop_room - Drop a room from the active music zone.
+/drop_room/<room-name> - Drop a room from the active music zone.
 ```
 
 ###Favorites
