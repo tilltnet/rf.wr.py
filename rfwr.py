@@ -76,6 +76,8 @@ def index():
         </script>
         '''
 
+### Music Zone Management
+
 @route('/zone/<no>')
 def zone(no):
         global l_zone
@@ -87,33 +89,67 @@ def zone(no):
         </script>
         '''
 
-def zone_basics(devices):
+def get_zones(devices):
         global l_zone
+
+        # Extract Raumfeld host IP-Address out of the device location and
         hostip = re.findall(r'[0-9]+(?:\.[0-9]+){3}', urlparse(devices[l_zone].location).netloc)
 
-        if devices[0].model_description == 'Virtual Media Player':
-            zones = [device.friendly_name for device in devices]
-        else:
-            zones = []
-
+        # Invoke /getZones on the Raumfeld host and read xml response as tree.
+        # the structure of tree is <zones><zone><room><///><unassigned><room><//>
+        # When all rooms are unassigned <zones> and sublevels are dropped.
         file = urllib2.urlopen('http://' + hostip[0] + ':47365/getZones')
         data = file.read()
         file.close()
         tree = ET.fromstring(data)
 
+        return tree, hostip
+
+def zone_management(devices):
+        # zones contains all Raumfeld music zones as RaumfeldDevices(). Can be
+        # used to extract zone names and change the target zone.
+        if devices[0].model_description == 'Virtual Media Player':
+            zones = [device.friendly_name for device in devices]
+        else:
+            zones = []
+
+        # Extract zones (including all sublevels) of tree and sort it alpahbetically by zone name.
+        tree, _ = get_zones(devices)
         rf_zones = sorted(tree[0].findall('zone'), key = lambda device: device[0].attrib['name'])
-        return hostip, zones, tree, rf_zones
+
+        return zones, tree, rf_zones
+
+def room_management(devices):
+        tree, hostip = get_zones(devices)
+        add_room_base = 'http://' + hostip[0] + ':47365/connectRoomToZone?zoneUDN='
+        drop_room_base = 'http://' + hostip[0] + ':47365/dropRoomJob?roomUDN='
+
+        # Generate partially random UDN for a room to be created.
+        zone_udn = 'aaaaaaaa-bbbb-cccc-eeee-' + str(randint(100000000000,9999999999999))
+
+        # Collect all rooms (in zones and unassigned).
+        # Checks if there are valid music zones present, if not it is assumed that all rooms are unassigned (see else).
+        if devices[0].model_description == 'Virtual Media Player':
+                ass_rooms = [tree[0][i].findall('room') for i in range(0,len(tree[0]))]
+                if len(tree) > 1:
+                        unass_rooms = tree[1].findall('room')
+                        ass_rooms.append(unass_rooms)
+                rooms = [room for sublist in ass_rooms for room in sublist]
+
+        else:
+                rooms = tree[0].findall('room') # This extracts all rooms if all rooms are unassigned.
+
+        return rooms, add_room_base, drop_room_base, zone_udn
+
 
 @route('/drop_room/<name>')
 def drop_room(name):
-        global l_zone
         devices = raumfeld.discover()
         if len(devices) < 1:
                 return 'No devices found.'
-        hostip, zones, tree, rf_zones = zone_basics(devices)
 
-        drop_room_base = 'http://' + hostip[0] + ':47365/dropRoomJob?roomUDN='
-        rooms = rf_zones[l_zone].findall('room')
+        rooms, _, drop_room_base, _ = room_management(devices)
+
         for room in rooms:
             if room.attrib['name'] == str(name):
                 udn_to_drop = room.attrib['udn']
@@ -132,64 +168,43 @@ def add_room(name):
         if len(devices) < 1:
                 return 'No devices found.'
 
-        hostip, zones, tree, _ = zone_basics(devices)
+        rooms, add_room_base, _, _ = room_management(devices)
 
         if devices[0].model_description == 'Virtual Media Player':
-                zones = [device.friendly_name for device in devices]
                 _, _, path, _, _, _ = urlparse(devices[l_zone].location)
                 _, zone_udn = path.replace('.xml', '').rsplit('/',1)
-                rooms = tree[1].findall('room')
-
         else:
                 zone_udn = 'aaaaaaaa-bbbb-cccc-eeee-ffffffffffff'
-                rooms = tree[0].findall('room')
 
-
-        add_room_base = 'http://' + hostip[0] + ':47365/connectRoomToZone?'
         for room in rooms:
             if room.attrib['name'] == str(name):
                 udn_to_add = room.attrib['udn']
-        urllib2.urlopen(add_room_base + 'zoneUDN=uuid:' + zone_udn + '&roomUDN=' + udn_to_add).read()
+        urllib2.urlopen(add_room_base + 'uuid:' + zone_udn + '&roomUDN=' + udn_to_add).read()
         return template('''
-        Room added.
-        <script language="javascript">
-                setTimeout("location.href = '/zones';",1500);
-        </script>
+            Room added.
+            <script language="javascript">
+                    setTimeout("location.href = '/zones';",1500);
+            </script>
         ''')
 
 @route('/new_zone/<name>')
 def new_zone(name):
-        global l_zone
         devices = raumfeld.discover()
         if len(devices) < 1:
                 return 'No devices found.'
 
-        hostip, zones, tree, _ = zone_basics(devices)
+        rooms, add_room_base, _, zone_udn = room_management(devices)
 
-        if devices[0].model_description == 'Virtual Media Player':
-                zones = [device.friendly_name for device in devices]
-                zone_udn = 'aaaaaaaa-bbbb-cccc-eeee-' + str(randint(100000000000,9999999999999))
-                ass_rooms = [tree[0][i].findall('room') for i in range(0,len(tree[0]))]
-                if len(tree) > 1:
-                        unass_rooms = tree[1].findall('room')
-                        ass_rooms.append(unass_rooms)
-                rooms = [room for sublist in ass_rooms for room in sublist]
-
-        else:
-                zone_udn = 'aaaaaaaa-bbbb-cccc-eeee-ffffffffffff'
-                rooms = tree[0].findall('room')
-
-
-        add_room_base = 'http://' + hostip[0] + ':47365/connectRoomToZone?'
         for room in rooms:
             if room.attrib['name'] == str(name):
                 udn_to_add = room.attrib['udn']
-        urllib2.urlopen(add_room_base + 'zoneUDN=uuid:' + zone_udn + '&roomUDN=' + udn_to_add).read()
+        urllib2.urlopen(add_room_base + 'uuid:' + zone_udn + '&roomUDN=' + udn_to_add).read()
+
         return template('''
-        New zone created.
-        <script language="javascript">
-                setTimeout("location.href = '/zones';",2000);
-        </script>
+            New zone created.
+            <script language="javascript">
+                    setTimeout("location.href = '/zones';",2000);
+            </script>
         ''')
 
 @route('/zones')
@@ -200,7 +215,7 @@ def zones():
                 return 'No devices found.'
         if l_zone > len(devices) - 1:
                 l_zone = 0
-        hostip, zones, tree, rf_zones = zone_basics(devices)
+        zones, tree, rf_zones = zone_management(devices)
 
         zone_nos = range(0, len(devices))
         active_zone = [no == l_zone for no in zone_nos]
