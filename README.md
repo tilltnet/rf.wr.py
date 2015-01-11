@@ -110,9 +110,7 @@ a seperate UI.
 /addfav - Add a favorite.
 /setfav/<no> - Overwrite a previously set favorite.
 /fav/<no> - Play a favorite.
-/playPodcast
-/playPdocast and
-/addPodcast - HTTP POST METHOD - accept 'feed_url' parameter
+/playPdocast and /addPodcast - HTTP POST METHOD - accept 'feed_url' parameter
 ```
 
 ###Special (These might be dropped soon.)
