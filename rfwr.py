@@ -1,6 +1,6 @@
+# -*- coding: utf-8 -*-
 import xml.etree.ElementTree as ET
-from bottle import route, run, template, debug
-from bottle import get, post, request
+from bottle import route, run, template, debug, get, post, request, redirect
 import raumfeld
 from bottle import static_file
 import os
@@ -14,8 +14,49 @@ abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
 os.chdir(dname)
 
-### Define your default music zone here. The zones are alpahbetically sorted by names (0 = A-Zone, 1 = B-Zone)
+# Define your default music zone here. The zones are alpahbetically sorted by
+# names (0 = A-Zone, 1 = B-Zone)
 l_zone = 0
+
+if os.path.isfile('active_zone_udn')==False:
+    with open('active_zone_udn', 'w') as f:
+            f.write('udn')
+
+with open('active_zone_udn', 'a+') as f:
+        active_zone_udn = f.readlines()[0]
+
+# Error message (No music zones)
+err_msg = 'No music zones found. There might be a network connection problem or you need to create <a href="/zones">zones</a>.'
+
+def discover_active_zone():
+        global l_zone
+        zones = raumfeld.discover()
+        if len(zones) < 1:
+                return 999, 999
+        if l_zone > len(zones) - 1:
+                l_zone = len(zones)-1
+        _, _, path, _, _, _ = urlparse(zones[l_zone].location)
+        _, active_zone_udn_test = path.replace('.xml', '').rsplit('/',1)
+
+        if active_zone_udn != active_zone_udn_test:
+            found = False
+            for i in range(0, len(zones)):
+                _, _, path, _, _, _ = urlparse(zones[i].location)
+                _, zone_udn = path.replace('.xml', '').rsplit('/',1)
+                if zone_udn == active_zone_udn:
+                    l_zone = i
+                    found = True
+            if found == False:
+                l_zone = 0
+
+        active_zone = zones[l_zone]
+        _, _, path, _, _, _ = urlparse(active_zone.location)
+        _, zone_udn = path.replace('.xml', '').rsplit('/',1)
+
+        if active_zone_udn != active_zone_udn_test:
+            with open('active_zone_udn', 'w') as f:
+                    f.write(zone_udn)
+        return active_zone, zones
 
 @route('/images/<filename:re:.*\.*>')
 def send_image(filename):
@@ -23,24 +64,10 @@ def send_image(filename):
 
 @route('/')
 def index():
-        return '''
-        <script language="javascript">
-                window.location.href = "/player"
-        </script>
-        '''
+        redirect('/player')
+
 
 ### Music Zone Management
-
-@route('/zone/<no>')
-def zone(no):
-        global l_zone
-        l_zone = int(no)
-        return '''
-        <script language="javascript">
-                window.location.href = "/zones"
-
-        </script>
-        '''
 
 def get_zones(devices):
         global l_zone
@@ -94,18 +121,58 @@ def room_management(devices):
 
         return rooms, add_room_base, drop_room_base, zone_udn
 
+@route('/zone/<no>')
+def zone(no):
+        global l_zone
+        global active_zone_udn
+        l_zone = int(no)
+        zones = raumfeld.discover()
+        if len(zones) < 1:
+            print 'No devices found.'
+        _, _, path, _, _, _ = urlparse(zones[int(no)].location)
+        _, zone_udn = path.replace('.xml', '').rsplit('/',1)
+        with open('active_zone_udn', 'w') as f:
+                f.write(zone_udn)
+        active_zone_udn = zone_udn
+        redirect('/zones')
+
+def zone_select_by_name(name):
+        global l_zone
+        global active_zone_udn
+        zones = raumfeld.discover()
+        if len(zones) < 1:
+            print 'No devices found.'
+        found = False
+        for i in range(0, len(zones)):
+            if zones[i].friendly_name == name:
+                l_zone = i
+                found = True
+        if found == False:
+            l_zone = 0
+        _, _, path, _, _, _ = urlparse(zones[l_zone].location)
+        _, zone_udn = path.replace('.xml', '').rsplit('/',1)
+        with open('active_zone_udn', 'w') as f:
+                f.write(zone_udn)
+        active_zone_udn = zone_udn
+        return found
+
+@route('/zone_name/<name>')
+def zone_name(name):
+        found = zone_select_by_name(name)
+        if found == False:
+            return template('Zone "{{name}}" not found. Setting active zone to zero. <a href="/zones">Continue</a>.', name = name)
+        redirect('/zones')
 
 @route('/drop_room/<name>')
 def drop_room(name):
-        devices = raumfeld.discover()
-        if len(devices) < 1:
-                return 'No devices found.'
-        rooms, _, drop_room_base, _ = room_management(devices)
+        _, zones = discover_active_zone()
+        if zones == 999:
+            return err_msg
+        rooms, _, drop_room_base, _ = room_management(zones)
         for room in rooms:
             if room.attrib['name'] == str(name):
                 udn_to_drop = room.attrib['udn']
         urllib2.urlopen(drop_room_base + udn_to_drop).read()
-
         return '''
         Room dropped.
         <script language="javascript">
@@ -116,12 +183,12 @@ def drop_room(name):
 @route('/add_room/<name>')
 def add_room(name):
         global l_zone
-        devices = raumfeld.discover()
-        if len(devices) < 1:
-                return 'No devices found.'
-        rooms, add_room_base, _, zone_udn = room_management(devices)
-        if devices[0].model_description == 'Virtual Media Player':
-                _, _, path, _, _, _ = urlparse(devices[l_zone].location)
+        _, zones = discover_active_zone()
+        if zones == 999:
+            return err_msg
+        rooms, add_room_base, _, zone_udn = room_management(zones)
+        if zones[0].model_description == 'Virtual Media Player':
+                _, _, path, _, _, _ = urlparse(zones[l_zone].location)
                 _, zone_udn = path.replace('.xml', '').rsplit('/',1)
 
         for room in rooms:
@@ -138,10 +205,10 @@ def add_room(name):
 
 @route('/new_zone/<name>')
 def new_zone(name):
-        devices = raumfeld.discover()
-        if len(devices) < 1:
-                return 'No devices found.'
-        rooms, add_room_base, _, zone_udn = room_management(devices)
+        _, zones = discover_active_zone()
+        if zones == 999:
+            return err_msg
+        rooms, add_room_base, _, zone_udn = room_management(zones)
         for room in rooms:
             if room.attrib['name'] == str(name):
                 udn_to_add = room.attrib['udn']
@@ -157,14 +224,12 @@ def new_zone(name):
 @route('/zones')
 def zones():
         global l_zone
-        devices = raumfeld.discover()
-        if len(devices) < 1:
-                return 'No devices found.'
-        if l_zone > len(devices) - 1:
-                l_zone = 0
-        zones, tree, rf_zones = zone_management(devices)
+        _, zones = discover_active_zone()
+        if zones == 999:
+            return err_msg
+        zones, tree, rf_zones = zone_management(zones)
 
-        zone_nos = range(0, len(devices))
+        zone_nos = range(0, len(zones))
         active_zone = [no == l_zone for no in zone_nos]
         active_zone = [re.sub('True', 'Active', str(no)) for no in active_zone]
         active_zone = [re.sub('False', 'Activate', str(no)) for no in active_zone]
@@ -173,25 +238,25 @@ def zones():
         <html>
         <head>
         <title>rf.wr.py</title>
- 		<style type="text/css">
- 		<!--A{text-decoration:none}-->
+         <style type="text/css">
+         <!--A{text-decoration:none}-->
         div.activation{
                         align: right;
                 }
- 		a.Active{
+         a.Active{
                            pointer-events: none;
                            cursor: default;
                            color: #D4C311;
- 		}
- 		a.room_Activate{
+         }
+         a.room_plus_Active{
                            pointer-events: none;
                            cursor: default;
-                           color: black;
- 		}
- 		div{
- 			margin: 0px auto; width: 250px;
+                           color: #bdffea;
+         }
+         div{
+             margin: 0px auto; width: 250px;
                         }
- 		div.zone_Activate{
+         div.zone_Activate{
                         background-color:#bdbbea;
                         padding: 15px 15px 15px 15px;
                         }
@@ -205,8 +270,8 @@ def zones():
                         background-color:#66FA7F;
                         padding: 15px 15px 15px 15px;
                         }
- 		</style>
- 	</head>
+         </style>
+     </head>
         <div><h1>Zone Manager <a href="/zones" title="Refresh">&#10226;</a> </h1>
         %if tree[0].tag == 'zones':
                 %for i in range(0, len(tree[0])):
@@ -214,7 +279,7 @@ def zones():
                         Zone {{i}}: {{zones[i]}} <div align="right" class="activation"><a class="{{active_zone[i]}}" href="/zone/{{i}}">{{active_zone[i]}}</a></div>
                         %for j in range(0, len(tree[0][i])):
                             <div class = "room">
-                                <a class="room_{{active_zone[i]}}" href="/drop_room/{{rf_zones[i][j].attrib['name']}}">- {{rf_zones[i][j].attrib['name']}}</a>
+                                <a href="/drop_room/{{rf_zones[i][j].attrib['name']}}">- {{rf_zones[i][j].attrib['name']}}</a><a class="room_plus_{{active_zone[i]}}"  href="/add_room/{{rf_zones[i][j].attrib['name']}}">[+]</a>
 
                                 </div>
                         %end
@@ -239,7 +304,7 @@ def zones():
         Usage:
         <ul>
         <li>Choose active zone by clicking on 'Activate'.</li>
-        <li>Remove Rooms from active zone by clicking on them.</li>
+        <li>Remove rooms from any zone by clicking on them or add [+] them to the active zone.</li>
         <li>Unassigned rooms can be added [+] to the active zone or used to create a new room, by clicking on the name.</li>
         </ul>
         <br><a href="/player">Back to Player</a>
@@ -247,79 +312,16 @@ def zones():
         </html>
         ''', zones=zones, l_zone=l_zone, tree=tree, rf_zones = rf_zones, active_zone=active_zone)
 
+
 ### Basic playback control
-
-@route('/pause')
-def pause():
-        devices = raumfeld.discover(5)
-        if len(devices) > 0:
-                speaker = devices[l_zone]
-                speaker.pause()
-        else:
-                return 'No devices found.'
-        return '''
-        <script language="javascript">
-                window.location.href = "/player"
-        </script>
-        '''
-
-@route('/next')
-def next():
-        devices = raumfeld.discover(5)
-        if len(devices) > 0:
-                speaker = devices[l_zone]
-                speaker.next()
-        else:
-                return 'No devices found.'
-        return '''
-        <script language="javascript">
-                window.location.href = "/player"
-        </script>
-        '''
-
-@route('/previous')
-def next():
-        devices = raumfeld.discover(5)
-        if len(devices) > 0:
-                speaker = devices[l_zone]
-                speaker.previous()
-        else:
-                return 'No devices found.'
-        return '''
-        <script language="javascript">
-                window.location.href = "/player"
-        </script>
-        '''
-
-@route('/comehome')
-def comehome():
-        URI = "http://dradio_mp3_dwissen_m.akacast.akamaistream.net/7/728/142684/v1/gnl.akacast.akamaistream.net/dradio_mp3_dwissen_m"
-        devices = raumfeld.discover(5)
-        if len(devices) > 0:
-                speaker = devices[l_zone]
-                TState = speaker.curTransState
-                if str(TState) == "STOPPED" or str(TState) == "PAUSED_PLAYBACK":
-                        speaker.mute = False
-                        speaker.volume = 50
-                        speaker.playURI(URI)
-                        player()
-                        return 'Welcome Home!'
-        else:
-                return 'No devices found.'
 
 @route('/play')
 def play():
-        devices = raumfeld.discover(5)
-        if len(devices) > 0:
-                speaker = devices[l_zone]
-                speaker.play()
-        else:
-                return 'No devices found.'
-        return '''
-        <script language="javascript">
-                window.location.href = "/player"
-        </script>
-        '''
+        active_zone, _ = discover_active_zone()
+        if active_zone == 999:
+                return err_msg
+        active_zone.play()
+        redirect('/player')
 
 @route('/playURI')
 def playURI():
@@ -334,50 +336,84 @@ def playURI():
 def do_playURI():
         URI = request.forms.get('URI')
         URIMeta = ''.join(['<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" xmlns:raumfeld="urn:schemas-raumfeld-com:meta-data/raumfeld"><container><dc:title>',URI,'</dc:title></container></DIDL-Lite>'])
-        devices = raumfeld.discover(5)
-        if len(devices) > 0:
-                speaker = devices[l_zone]
-                speaker.playURI(URI, URIMeta)
-        else:
-                return 'No devices found.'
-        return '''
-        <script language="javascript">
-                window.location.href = "/player"
-        </script>
-        '''
 
-@route('/play/drwissen')
+        active_zone, _ = discover_active_zone()
+        if active_zone == 999:
+                return err_msg
+        active_zone.playURI(URI, URIMeta)
+        redirect('/player')
+
+@route('/pause')
+def pause():
+        active_zone, _ = discover_active_zone()
+        if active_zone == 999:
+                return err_msg
+        active_zone.pause()
+        redirect('/player')
+
+@route('/next')
+def next():
+        active_zone, _ = discover_active_zone()
+        if active_zone == 999:
+                return err_msg
+        active_zone.next()
+        redirect('/player')
+
+
+@route('/previous')
+def previous():
+        active_zone, _ = discover_active_zone()
+        if active_zone == 999:
+                return err_msg
+        active_zone.previous()
+        redirect('/player')
+
+@route('/play_pause')
+def play_pause():
+        active_zone, _ = discover_active_zone()
+        if active_zone == 999:
+                return err_msg
+        TState = active_zone.curTransState
+        if str(TState) == "STOPPED" or str(TState) == "PAUSED_PLAYBACK":
+                active_zone.mute = False
+                active_zone.play()
+        else:
+                active_zone.pause()
+
+@route('/comehome')
+def comehome():
+        URI = "http://dradio_mp3_dwissen_m.akacast.akamaistream.net/7/728/142684/v1/gnl.akacast.akamaistream.net/dradio_mp3_dwissen_m"
+        active_zone, _ = discover_active_zone()
+        if active_zone == 999:
+                return err_msg
+        TState = active_zone.curTransState
+        if str(TState) == "STOPPED" or str(TState) == "PAUSED_PLAYBACK":
+                active_zone.mute = False
+                active_zone.volume = 50
+                active_zone.playURI(URI)
+                return 'Welcome Home!'
+
+@route('/play/drwissen') # deprecated, use /fav/<no> instead.
 def drwissen():
         URI = "http://dradio_mp3_dwissen_m.akacast.akamaistream.net/7/728/142684/v1/gnl.akacast.akamaistream.net/dradio_mp3_dwissen_m"
-        devices = raumfeld.discover(5)
+        devices = raumfeld.discover()
         if len(devices) > 0:
                 speaker = devices[l_zone]
                 speaker.playURI(URI)
-        else:
-                return 'No devices found.'
-        return '''
-        <script language="javascript">
-                window.location.href = "/player"
-        </script>
-        '''
+        redirect('/player')
 
 ### Volume Control
 
 @route('/vol/<no>')
 def vol(no):
-        devices = raumfeld.discover(5)
-        if len(devices) > 0:
-                speaker = devices[l_zone]
-                speaker.mute = False
-                speaker.volume = int(no)
-        else:
-                return 'No devices found.'
-        return '''
-        Volume set.
-        <script language="javascript">
-                window.location.href = "/player"
-        </script>
-        '''
+        active_zone, _ = discover_active_zone()
+        if active_zone == 999:
+                return err_msg
+        active_zone.mute = False
+        active_zone.volume = int(no)
+
+        redirect('/player')
+
 
 ### Podcast support
 
@@ -395,6 +431,7 @@ def pod_parse_feed(feed_url):
         file.close()
         tree = ET.fromstring(data)
         title = tree[0].find('title').text
+
         return tree, title
 
 @post('/playPodcast')
@@ -402,18 +439,14 @@ def playPodcastPost():
         feed_url = request.forms.get('feed_url')
         tree, title = pod_parse_feed(feed_url)
         URI = tree[0].find('item').find('enclosure').attrib['url']
-        URIMeta = ''.join(['<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" xmlns:raumfeld="urn:schemas-raumfeld-com:meta-data/raumfeld"><container><dc:title>',title,'</dc:title></container></DIDL-Lite>'])
-        devices = raumfeld.discover()
-        if len(devices) > 0:
-                speaker = devices[l_zone]
-                speaker.playURI(URI, URIMeta)
-        else:
-                return 'No devices found.'
-        return '''
-        <script language="javascript">
-                        window.location.href = "/player"
-        </script>
-        '''
+        #URIMeta = ''.join(['<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" xmlns:raumfeld="urn:schemas-raumfeld-com:meta-data/raumfeld"><container><dc:title>',title,'</dc:title></container></DIDL-Lite>']).encode('utf8')
+
+        active_zone, _ = discover_active_zone()
+        if active_zone == 999:
+                return err_msg
+        active_zone.playURI(URI)
+
+        redirect('/player')
 
 @post('/addPodcast')
 def addPodcast():
@@ -429,12 +462,9 @@ def addPodcast():
 
         with open('podcasts','w') as f:
                 for item in content:
-                        f.write("%s\n" % item)
-        return '''
-        <script language="javascript">
-                        window.location.href = "/player"
-        </script>
-        '''
+                        f.write('%s\n' % item.encode('utf8'))
+        redirect('/player')
+
 
 ### Favorites
 
@@ -470,72 +500,52 @@ def read_favs(no=1):
 
 @route('/fav/<no>')
 def fav(no):
-        favs = read_favs(no)
-        no = favs[0]
-        URIs = favs[1]
-        Meta = favs[2]
+        no, URIs, Meta, _ = read_favs(no)
         if len(URIs) == 0:
                 return 'No Favorites have been set yet. Use /addfav to add a favorite.'
         elif len(URIs) <= no:
                 return 'This favorite has not been set yet. Use /addfav to add a favorite.'
         favURI = URIs[no]
         favMeta = Meta[no]
-        devices = raumfeld.discover(5)
-        if len(devices) > 0:
-                speaker = devices[l_zone]
-                speaker.playURI(favURI, favMeta)
-        else:
-                return 'No devices found.'
-        return '''
-        Playing...
-        <script language="javascript">
-                window.location.href = "/player"
-        </script>
-        '''
+        active_zone, _ = discover_active_zone()
+        if active_zone == 999:
+                return err_msg
+        active_zone.playURI(favURI, favMeta)
+        redirect('/player')
+
 
 @route('/setfav/<no>')
 def setfav(no):
-    	favs = read_favs(no)
-    	no = favs[0]
-    	URIs = favs[1]
-    	Meta = favs[2]
-    	if len(URIs) == 0:
-    		return 'No Favorites have been set yet. Use /addfav to add a favorite.'
-    	elif len(URIs) <= no:
-    		return 'This favorite has not been set yet. Use /addfav to add a favorite.'
-    	devices = raumfeld.discover()
-    	if len(devices) > 0:
-    		speaker = devices[l_zone]
-    		URIs[no] = speaker.currentURI()
-    		Meta[no] = speaker.currentURIMetaData()
-    	else:
-    		return 'No devices found.'
-    	out_list = []
-    	for i in range(0,len(URIs)):
-    		out_list.append(URIs[i])
-    		out_list.append(Meta[i])
-    	with open('favorites','w') as f:
-    		for item in out_list:
-      			f.write("%s\n" % item)
-    	return '''
-    	Favorite has been set.
-    	<script language="javascript">
-        		window.location.href = "/player"
-    	</script>
-    	'''
+        no, URIs, Meta, _ = read_favs(no)
+        if len(URIs) == 0:
+            return 'No Favorites have been set yet. Use /addfav to add a favorite.'
+        elif len(URIs) <= no:
+            return 'This favorite has not been set yet. Use /addfav to add a favorite.'
+
+        active_zone, _ = discover_active_zone()
+        if active_zone == 999:
+                return err_msg
+        URIs[no] = active_zone.currentURI()
+        Meta[no] = active_zone.currentURIMetaData()
+
+        out_list = []
+        for i in range(0,len(URIs)):
+                  out_list.append(URIs[i])
+                  out_list.append(Meta[i])
+        with open('favorites','w') as f:
+                  for item in out_list:
+                               f.write("%s\n" % item)
+        redirect('/player')
+
 
 @route('/addfav')
 def addfav():
-        favs = read_favs()
-        URIs = favs[1]
-        Meta = favs[2]
-        devices = raumfeld.discover(5)
-        if len(devices) > 0:
-                speaker = devices[l_zone]
-                URIs.append(speaker.currentURI())
-                Meta.append(speaker.currentURIMetaData())
-        else:
-                return 'No devices found.'
+        _, URIs, Meta, _ = read_favs()
+        active_zone, _ = discover_active_zone()
+        if active_zone == 999:
+                return err_msg
+        URIs.append(active_zone.currentURI())
+        Meta.append(active_zone.currentURIMetaData())
         out_list = []
         for i in range(0,len(URIs)):
                 out_list.append(URIs[i])
@@ -543,24 +553,45 @@ def addfav():
         with open('favorites','w') as f:
                 for item in out_list:
                         f.write("%s\n" % item)
-        return '''
-        Favorite has been set.
-        <script language="javascript">
-                window.location.href = "/player"
-        </script>
-        '''
+        redirect('/player')
+
 
 ### Info
 
 @route('/info')
 def info():
-        devices = raumfeld.discover(5)
+        devices = raumfeld.discover()
         if len(devices) > 0:
                 speaker = devices[l_zone]
                 curURI = speaker.currentURI()
                 curMeta = speaker.currentURIMetaData()
                 trackURI = speaker.trackURI()
                 trackMeta = speaker.trackMetaData()
+
+                namespaces = {'dc':'http://purl.org/dc/elements/1.1/','upnp':'urn:schemas-upnp-org:metadata-1-0/upnp/','raumfeld':'urn:schemas-raumfeld-com:meta-data/raumfeld/'}
+
+                curMeta_tree = ET.fromstring(str(curMeta))
+                trackMeta_tree = ET.fromstring(str(trackMeta))
+                try:
+                    curURI_title = curMeta_tree[0].find('dc:title', namespaces).text
+                except ValueError:
+                    curURU_titlt = '-'
+                try:
+                    track_title = trackMeta_tree[0].find('dc:title', namespaces).text
+                except ValueError:
+                    track_title = '-'
+                try:
+                    track_album = trackMeta_tree[0].find('upnp:album', namespaces).text
+                except ValueError:
+                        track_album = '-'
+                try:
+                    track_artist = trackMeta_tree[0].find('upnp:artist', namespaces).text
+                except ValueError:
+                        track_artist = '-'
+                try:
+                    track_img = trackMeta_tree[0].find('upnp:albumArtURI', namespaces).text
+                except ValueError:
+                        track_img = '-'
         else:
                 return 'No devices found.'
 
@@ -568,6 +599,12 @@ def info():
         return template('''
                 <html>
                         <body>
+                                <h1>Track and Playlist Info</h1>
+                                <img src="{{track_img}}"><br>
+                                Track: {{track_title}} <br>
+                                Artist: {{track_artist}} <br>
+                                Album: {{track_album}} <br>
+                                Playlist: {{curURI_title}}<br><br>
 
                                 CurrentURI:<br> {{curURI}} <br> <br>
                                 CurrentMetaData:<br> {{curMeta}}<br> <br>
@@ -577,23 +614,22 @@ def info():
 
                                 Devices / Music Zones:<br> {{devices}}
                                 <br><br><a href="/player">Back to Player</a>
+                                <br><br>
+
                         </body>
 
                 </html>
-        ''', curURI=curURI, curMeta=curMeta, trackURI=trackURI, trackMeta=trackMeta, devices=devices)
+        ''', track_img=track_img, track_artist=track_artist, track_album = track_album, curURI_title=curURI_title, track_title=track_title, curURI=curURI, curMeta=curMeta, trackURI=trackURI, trackMeta=trackMeta, devices=devices)
 
 ### Player UI (for HTML see player.tbl)
 
 @route('/player')
 def player():
-        favs = read_favs()
-        URIs = favs[1]
-        Meta = favs[2]
+        _, URIs, Meta, titles = read_favs()
         fav_count = range(1,len(URIs) + 1)
-        titles = favs[3]
         podcasts = pod_read()
         return template('player', fav_count = fav_count, titles = titles, podcasts = podcasts)
 
 
-#debug(True)
-run(host='0.0.0.0', port = 8080)#, reloader = True)
+debug(True)
+run(host='0.0.0.0', port = 8080, reloader = True)
