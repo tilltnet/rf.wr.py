@@ -1,0 +1,251 @@
+
+/* footer - External Media*/
+
+.podbar {
+    bottom:0;
+    position:fixed;
+    z-index:150;
+    _position:absolute;
+    _top:expression(eval(document.documentElement.scrollTop+
+        (document.documentElement.clientHeight-this.offsetHeight)));
+    height:35px;
+    background-color: rgba(55,55,55,0.6);
+    width: 100%;
+}
+
+
+
+
+
+
+/* General Link Properties*/
+<!--A{
+  text-decoration:none;
+  color: black;
+  }-->
+
+/* Macro div structure */
+div.container{
+  width: 100%;
+  height: 100%;
+}
+
+div.main{
+  float: left;
+}
+
+/* Controls */
+div.controlElement{
+  width: 148px;
+  height: 148px;
+  margin-top: 2px;
+  margin-bottom: 4px;
+  font-size: 9pt;
+}
+
+div.control{
+  height: 100%;
+  float: left;
+  width: 148px;
+  margin-right: 4px;
+  margin-left: 2px;
+}
+
+div.controlElementURI{
+}
+
+img.controlElementIMG{
+  height: auto;
+  width: 148px;
+}
+
+div.controlElementVOL{
+  height: 4px;
+  width: 148px;
+  position: relative;
+
+}
+
+div.controlElementVOL:hover{
+  background-color:#b3b3b3;
+}
+
+div.controlElementVOLBAR{
+    position: absolute;
+
+}
+
+div.controlElementVOL_cont{
+    position: absolute;
+
+}
+
+div.controlElementMUTE{
+  width: 148px;
+  height: 40px;
+  margin-top: 2px;
+  margin-bottom: 4px;
+}
+
+div.controlElementMUTE:hover, div.controlElement:hover{
+   background-color: #ffffff;
+}
+
+img.addFav:hover{
+   background-color: rgba(255,255,255,1.0);
+}
+
+/* Cover grids */
+div#grids{
+  float: left;
+  width: 80%;
+  font-size: 9pt;
+}
+
+@media screen and (max-width: 1200px) {
+    .container{
+      width: 90%;
+    }
+    div#grids{
+      width: 83%;
+    }
+}
+
+@media screen and (max-width: 940px) {
+    .container{
+      width: 90%;
+    }
+    div#grids{
+      width: 80%;
+    }
+}
+
+@media screen and (max-width: 800px) {
+    .container{
+      width: 90%;
+    }
+    div#grids{
+      width: 75%;
+    }
+}
+
+@media screen and (max-width: 630px) {
+    .container{
+      width: 500px;
+    }
+    div#grids{
+      width: 310px;
+    }
+    div#cover_seekbar{
+      float: left;
+    }
+
+}
+
+@media screen and (max-width: 480px) {
+  #iframe_control{
+    height: 300px;
+  }
+}
+
+div.cover{
+  overflow: hidden;
+  position: relative;
+  float: left;
+  font-size: 9pt;
+  height: 148px;
+  width: 148px;
+  background-color: rgba(170, 170, 170, 0.7);
+  background-size: 148px 148px;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  margin-right: 4px;
+}
+
+div.cover_text{
+  position: relative;
+  float: left;
+  font-size: 10pt;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 2;
+  transition: 0.8s ease;
+  top: 90px;
+}
+
+
+
+/* Zone management */
+
+a.Active{
+           pointer-events: none;
+           cursor: default;
+           color: #D4C311;
+          }
+a.Activate:hover{
+           color: #D4C311;
+          }
+a.room_plus_Active{
+           pointer-events: none;
+           cursor: default;
+           color: #bdffea;
+        }
+
+div.zone_Activate{
+        position: relative;
+        background-color:#bdbbea;
+        border: 1px solid;
+        border-color: #bdbbea;
+        width: 146px;
+        height: 146px;
+        }
+
+div.zone_Active{
+        position: relative;
+        background-color:#bdffea;
+        border: 1px solid;
+        border-color: yellow;
+        width: 146px;
+        height: 146px;
+        }
+
+div.unassigned{
+        background-color:#66FA7F;
+        width: 142px;
+        padding: 2px 2px 2px 2px;
+        font-family: sans-serif;
+        border: 1px solid;
+        border-color: #66FA7F;
+        z-index: 2;
+        height: 142px;
+        }
+div.zone_title{
+        width: 142px;
+        padding: 2px 2px 2px 2px;
+        background-color: rgba(50,50,50,0.6);
+        color: rgba(200,200,200,1);
+        font-family: sans-serif;
+}
+div.zone_content{
+        position: relative;
+        width: 142px;
+        padding: 2px 2px 2px 2px;
+        font-family: sans-serif;
+        z-index: 2;
+}
+
+/* span hack by thepeer and Ville Laurikauri (http://stackoverflow.com/questions/796087/make-a-div-into-a-link)*/
+span{
+  position:absolute;
+  width:100%;
+  height:100%;
+  top:0;
+  left: 0;
+
+  /* edit: added z-index */
+  z-index: 1;
+
+  /* edit: fixes overlap error in IE7/8,
+     make sure you have an empty gif */
+  /*background-image: url('empty.gif');*/
+
+}

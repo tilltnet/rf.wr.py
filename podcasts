@@ -1,4 +1,14 @@
-WRINT;http://www.wrint.de/feed/podcast/
-Logbuch:Netzpolitik;http://feeds.feedburner.com/logbuch-netzpolitik-mp3
-WRINT: Die Wrintheit;http://feeds.feedburner.com/DieWrintheit
-Freak Show;http://feeds.feedburner.com/mobile-macs-enhanced-podcast
+Chaosradio;http://chaosradio.ccc.de/chaosradio-latest.rss;http://musicbox.local:8080/images/Chaosradio.png;/images/Chaosradio.png
+CRE: Technik, Kultur, Gesellschaft;http://feeds.feedburner.com/cre-podcast/mp3;http://musicbox.local:8080/images/CRE: Technik, Kultur, Gesellschaft.png;/images/CRE: Technik, Kultur, Gesellschaft.png
+Logbuch:Netzpolitik;http://feeds.feedburner.com/logbuch-netzpolitik-mp3;http://musicbox.local:8080/images/Logbuch:Netzpolitik.png;/images/Logbuch:Netzpolitik.png
+DRadio Wissen - Eine Stunde Netz;http://dradiowissen.de/podcast/eine-stunde-netz;http://musicbox.local:8080/images/DRadio Wissen - Eine Stunde Netz.png;/images/DRadio Wissen - Eine Stunde Netz.png
+WRINT;http://www.wrint.de/feed/podcast/;http://musicbox.local:8080/images/WRINT.png;/images/WRINT.png
+Freak Show;http://feeds.feedburner.com/mobile-macs-enhanced-podcast;http://musicbox.local:8080/images/Freak Show.png;/images/Freak Show.png
+WRINT: Die Wrintheit;http://feeds.feedburner.com/DieWrintheit;http://musicbox.local:8080/images/WRINT: Die Wrintheit.png;/images/WRINT: Die Wrintheit.png
+WRINT: Fotografie;http://www.wrint.de/category/fotografie/feed/;http://musicbox.local:8080/images/WRINT: Fotografie.png;/images/WRINT: Fotografie.png
+Chaosradio;http://chaosradio.ccc.de/chaosradio-latest.rss;http://musicbox.local:8080/images/Chaosradio.png;/images/Chaosradio.png
+Medienmagazin | radioeins;http://www.radioeins.de/archiv/podcast/medienmagazin.xml/feed=podcast.xml;http://musicbox.local:8080/images/Medienmagazin | radioeins.png;/images/Medienmagazin | radioeins.png
+Sanft & Sorgfaeltig | radioeins;http://www.radioeins.de/archiv/podcast/zwei_alte_hasen.feed.podcast.xml;http://musicbox.local:8080/images/podcast2_www.png;/images/podcast2_www.png
+DRadio Wissen - Eine Stunde Netz;http://dradiowissen.de/podcast/eine-stunde-netz;http://musicbox.local:8080/images/DRadio Wissen - Eine Stunde Netz.png;/images/DRadio Wissen - Eine Stunde Netz.png
+Medienmagazin | radioeins;http://www.radioeins.de/archiv/podcast/medienmagazin.xml/feed=podcast.xml;http://musicbox.local:8080/images/Medienmagazinradioeins.png;/images/Medienmagazinradioeins.png
+Sanft & Sorgfältig | radioeins;http://www.radioeins.de/archiv/podcast/zwei_alte_hasen.feed.podcast.xml;http://musicbox.local:8080/images/SanftSorgfltigradioeins.png;/images/SanftSorgfltigradioeins.png
