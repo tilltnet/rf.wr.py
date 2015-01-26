@@ -11,7 +11,7 @@ rf.wr.py uses [raumfeld-python](https://github.com/tfeldmann/python-raumfeld) (w
 
 Install
 -------
-*Notice:* Starting with 0.5 rf.wr comes with binaries for different systems are available. For now, only Windows 64-bit and GNU/Linux 64-bit versions are provided, for all other platforms follow the instructions for manual installation below.
+*Notice:* Starting with 0.5 rf.wr [binaries for different systems are available](https://github.com/tilltnet/rf.wr.py/tree/master/zip). For now, only Windows 64-bit and GNU/Linux 64-bit versions are provided, for all other platforms follow the instructions for manual installation below.
 
 *These instructions should basically work on most GNU/Linux and MacOSX systems. With python installed it is possible to run rf.wr on a Windows machine (untestet!).*
 
