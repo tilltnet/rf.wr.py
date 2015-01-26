@@ -1,4 +1,6 @@
-# -*- coding: utf-8 -*-
+# -*- coding: UTF-8 -*-
+from gevent import monkey; monkey.patch_all()
+
 import xml.etree.ElementTree as ET
 from bottle import route, run, template, debug, get, post, request, redirect
 import raumfeld
@@ -10,6 +12,12 @@ import urllib2
 import re
 from urlparse import urlparse
 from random import randint
+import hashlib
+import codecs
+import string
+from bottle import Bottle, abort, mount, default_app
+from gevent import queue, sleep
+
 
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
@@ -18,6 +26,11 @@ os.chdir(dname)
 # Define your default music zone here. The zones are alpahbetically sorted by
 # names (0 = A-Zone, 1 = B-Zone)
 l_zone = 0
+zones_on =  False
+
+zones = raumfeld.discover(1,1)
+if len(zones) < 1:
+        print('No zones found.')
 
 if os.path.isfile('active_zone_udn')==False:
     with open('active_zone_udn', 'w') as f:
@@ -26,20 +39,25 @@ if os.path.isfile('active_zone_udn')==False:
 with open('active_zone_udn', 'a+') as f:
         active_zone_udn = f.readlines()[0]
 
+
+
 # Error message (No music zones)
 err_msg = 'No music zones found. There might be a network connection problem or you need to create <a href="/zones">zones</a>.'
 
 def discover_active_zone():
         global l_zone
-        zones = raumfeld.discover()
-        if len(zones) < 1:
-                return 999, 999
-        if l_zone > len(zones) - 1:
-                l_zone = len(zones)-1
-        _, _, path, _, _, _ = urlparse(zones[l_zone].location)
-        _, active_zone_udn_test = path.replace('.xml', '').rsplit('/',1)
+        global zones
+        global checkSum
 
-        if active_zone_udn != active_zone_udn_test:
+        #_, _, path, _, _, _ = urlparse(zones[l_zone].location)
+        #_, active_zone_udn_test = path.replace('.xml', '').rsplit('/',1)
+        _, _, checkSum_test = get_zones(zones)
+
+        if checkSum != checkSum_test:
+            zones = raumfeld.discover()
+            if len(zones) < 1:
+                    return 999
+
             found = False
             for i in range(0, len(zones)):
                 _, _, path, _, _, _ = urlparse(zones[i].location)
@@ -54,10 +72,13 @@ def discover_active_zone():
         _, _, path, _, _, _ = urlparse(active_zone.location)
         _, zone_udn = path.replace('.xml', '').rsplit('/',1)
 
-        if active_zone_udn != active_zone_udn_test:
+        if checkSum != checkSum_test:
             with open('active_zone_udn', 'w') as f:
                     f.write(zone_udn)
-        return active_zone, zones
+            checkSum = checkSum_test
+            with open('zone_checkSum', 'w') as f:
+                    f.write(checkSum)
+        return active_zone
 
 @route('/images/<filename:re:.*\.*>')
 def send_image(filename):
@@ -86,9 +107,22 @@ def get_zones(devices):
         file = urllib2.urlopen('http://' + hostip[0] + ':47365/getZones')
         data = file.read()
         file.close()
+        checkSum = hashlib.sha224(data).hexdigest()
+
         tree = ET.fromstring(data)
 
-        return tree, hostip
+        return tree, hostip, checkSum
+
+if os.path.isfile('zone_checkSum')==False:
+    _, _, checkSum = get_zones(zones)
+    with open('zone_checkSum', 'w') as f:
+            f.write(checkSum)
+else:
+    with open('zone_checkSum', 'a+') as f:
+            checkSum = f.readlines()[0]
+
+_ = discover_active_zone()
+
 
 def zone_management(devices):
         # zones contains all Raumfeld music zones as RaumfeldDevices(). Can be
@@ -99,7 +133,7 @@ def zone_management(devices):
             zone_room_names = []
 
         # Extract zones (including all sublevels) of tree and sort it alpahbetically by zone name.
-        tree, _ = get_zones(devices)
+        tree, _, _ = get_zones(devices)
         #rf_zones = sorted(tree[0].findall('zone'), key = lambda device: device[0].attrib['name'])
         # Extract zones (including all sublevels) of tree and sort it alpahbetically by zone name.
         # rf_zones = tree[0].findall('zone')
@@ -114,7 +148,7 @@ def zone_management(devices):
         return zone_room_names, tree
 
 def room_management(devices):
-        tree, hostip = get_zones(devices)
+        tree, hostip, _ = get_zones(devices)
         add_room_base = 'http://' + hostip[0] + ':47365/connectRoomToZone?zoneUDN='
         drop_room_base = 'http://' + hostip[0] + ':47365/dropRoomJob?roomUDN='
 
@@ -139,6 +173,7 @@ def room_management(devices):
 def zone(no):
         global l_zone
         global active_zone_udn
+        global zones
         l_zone = int(no)
         zones = raumfeld.discover()
         if len(zones) < 1:
@@ -148,11 +183,12 @@ def zone(no):
         with open('active_zone_udn', 'w') as f:
                 f.write(zone_udn)
         active_zone_udn = zone_udn
-        redirect('/zones')
+        redirect('/player')
 
 def zone_select_by_name(name):
         global l_zone
         global active_zone_udn
+        global zones
         zones = raumfeld.discover()
         if len(zones) < 1:
             print 'No devices found.'
@@ -175,11 +211,12 @@ def zone_name(name):
         found = zone_select_by_name(name)
         if found == False:
             return template('Zone "{{name}}" not found. Setting active zone to zero. <a href="/zones">Continue</a>.', name = name)
-        redirect('/zones')
+        redirect('/ctct')
 
 @route('/drop_room/<name>')
 def drop_room(name):
-        _, zones = discover_active_zone()
+        global zones
+        _ = discover_active_zone()
         if zones == 999:
             return err_msg
         rooms, _, drop_room_base, _ = room_management(zones)
@@ -187,17 +224,15 @@ def drop_room(name):
             if room.attrib['name'] == str(name):
                 udn_to_drop = room.attrib['udn']
         urllib2.urlopen(drop_room_base + udn_to_drop).read()
-        return '''
-        Room dropped.
-        <script language="javascript">
-                setTimeout("location.href = '/zones';",1500);
-        </script>
-        '''
+        sleep(1.5)
+        redirect('/ctct')
+
 
 @route('/add_room/<name>')
 def add_room(name):
         global l_zone
-        _, zones = discover_active_zone()
+        global zones
+        _ = discover_active_zone()
         if zones == 999:
             return err_msg
         rooms, add_room_base, _, zone_udn = room_management(zones)
@@ -209,17 +244,13 @@ def add_room(name):
             if room.attrib['name'] == str(name):
                 udn_to_add = room.attrib['udn']
         urllib2.urlopen(add_room_base + 'uuid:' + zone_udn + '&roomUDN=' + udn_to_add).read()
-
-        return template('''
-            Room added.
-            <script language="javascript">
-                    setTimeout("location.href = '/zones';",1500);
-            </script>
-        ''')
+        sleep(1.5)
+        redirect('/ctct')
 
 @route('/new_zone/<name>')
 def new_zone(name):
-        _, zones = discover_active_zone()
+        global zones
+        _ = discover_active_zone()
         if zones == 999:
             return err_msg
         rooms, add_room_base, _, zone_udn = room_management(zones)
@@ -227,113 +258,40 @@ def new_zone(name):
             if room.attrib['name'] == str(name):
                 udn_to_add = room.attrib['udn']
         urllib2.urlopen(add_room_base + 'uuid:' + zone_udn + '&roomUDN=' + udn_to_add).read()
-
-        return template('''
-            New zone created.
-            <script language="javascript">
-                    setTimeout("location.href = '/zones';",2000);
-            </script>
-        ''')
+        sleep(1.5)
+        redirect('/ctct')
 
 @route('/zones')
-def zones():
+def zones_fun():
         global l_zone
-        _, zones = discover_active_zone()
+        global zones
+        _ = discover_active_zone()
         if zones == 999:
             return err_msg
         zone_room_names, tree = zone_management(zones)
 
         zone_nos = range(0, len(zones))
-        active_zone = [no == l_zone for no in zone_nos]
-        active_zone = [re.sub('True', 'Active', str(no)) for no in active_zone]
-        active_zone = [re.sub('False', 'Activate', str(no)) for no in active_zone]
+        active_zone_str_helper = [no == l_zone for no in zone_nos]
+        active_zone_str_helper = [re.sub('True', 'Active', str(no)) for no in active_zone_str_helper]
+        active_zone_str_helper = [re.sub('False', 'Activate', str(no)) for no in active_zone_str_helper]
 
-        return template('''
-        <html>
-        <head>
-        <title>rf.wr.py</title>
- 		<style type="text/css">
- 		<!--A{text-decoration:none}-->
-        div.activation{
-                        align: right;
-                }
- 		a.Active{
-                           pointer-events: none;
-                           cursor: default;
-                           color: #D4C311;
- 		}
- 		a.room_plus_Active{
-                           pointer-events: none;
-                           cursor: default;
-                           color: #bdffea;
- 		}
- 		div{
- 			margin: 0px auto; width: 250px;
-                        }
- 		div.zone_Activate{
-                        background-color:#bdbbea;
-                        padding: 15px 15px 15px 15px;
-                        }
+        return template('zone_manager', zone_room_names=zone_room_names, l_zone=l_zone, tree=tree, active_zone_str_helper=active_zone_str_helper)
 
-                div.zone_Active{
-                        background-color:#bdffea;
-                        padding: 15px 15px 15px 15px;
-                        border: 1px solid;
-                        }
-                div.unassigned{
-                        background-color:#66FA7F;
-                        padding: 15px 15px 15px 15px;
-                        }
- 		</style>
- 	</head>
-        <div><h1>Zone Manager <a href="/zones" title="Refresh">&#10226;</a> </h1>
-        %if tree[0].tag == 'zones':
-                %i = 0
-                %for zone in zone_room_names:
-                        <div class = "zone_{{active_zone[i]}}">
-                        Zone {{i}}: {{zone_room_names[i].keys()[0]}} <div align="right" class="activation"><a class="{{active_zone[i]}}" href="/zone/{{i}}">{{active_zone[i]}}</a></div>
-                        %for room in zone[zone.keys()[0]]:
-                            <div class = "room">
-                                <a href="/drop_room/{{room}}">- {{room}}</a><a class="room_plus_{{active_zone[i]}}"  href="/add_room/{{room}}">[+]</a>
-
-                                </div>
-                        %end
-                        </div>
-                        %i = i + 1
-                %end
-                       Active Zone: {{l_zone}}<br>
-                %if len(tree) > 1:
-                    <div class = "unassigned"> Unassigned:
-                    %for i in range(0, len(tree[1])):
-                        <div class = "room"><a href="/new_zone/{{tree[1][i].attrib['name']}}">{{tree[1][i].attrib['name']}}</a><a href="/add_room/{{tree[1][i].attrib['name']}}">[+]</a></div>
-                    %end
-                    </div>
-                %end
-        %else:
-                    <div class = "unassigned"> Unassigned:
-                    %for i in range(0, len(tree[0])):
-                        <div class = "room"><a href="/new_zone/{{tree[0][i].attrib['name']}}">{{tree[0][i].attrib['name']}}</a><a href="/add_room/{{tree[0][i].attrib['name']}}">[+]</a></div>
-                    %end
-                    </div>
-        %end
-        <br><br>
-        Usage:
-        <ul>
-        <li>Choose active zone by clicking on 'Activate'.</li>
-        <li>Remove rooms from any zone by clicking on them or add [+] them to the active zone.</li>
-        <li>Unassigned rooms can be added [+] to the active zone or used to create a new room, by clicking on the name.</li>
-        </ul>
-        <br><a href="/player">Back to Player</a>
-        </div>
-        </html>
-        ''', zone_room_names=zone_room_names, l_zone=l_zone, tree=tree, active_zone=active_zone)
+@route('/zones_on_off')
+def zones_on_off():
+    global zones_on
+    if zones_on:
+        zones_on = False
+    else:
+        zones_on = True
+    redirect('/ctct')
 
 
 ### Basic playback control
 
 @route('/play')
 def play():
-        active_zone, _ = discover_active_zone()
+        active_zone = discover_active_zone()
         if active_zone == 999:
                 return err_msg
         active_zone.play()
@@ -374,7 +332,7 @@ def do_playURI():
         coverURI = 'http://' + host + '/images/audio_www.png'
         URIMeta = ''.join(['<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" xmlns:raumfeld="urn:schemas-raumfeld-com:meta-data/raumfeld"><container id="0/" parentID="0/" restricted="1" childCount="1"><raumfeld:totalPlaytime>1:02:20</raumfeld:totalPlaytime><upnp:albumArtURI>',coverURI,'</upnp:albumArtURI><raumfeld:name>Album</raumfeld:name><upnp:artist>',artist,'</upnp:artist><upnp:album>',album,'</upnp:album><upnp:class>object.container.album.musicAlbum</upnp:class><dc:date>3000</dc:date><dc:title>',title,'</dc:title><raumfeld:section>My Music</raumfeld:section></container></DIDL-Lite>'])
 
-        active_zone, _ = discover_active_zone()
+        active_zone = discover_active_zone()
         if active_zone == 999:
                 return err_msg
 
@@ -383,7 +341,7 @@ def do_playURI():
 
 @route('/pause')
 def pause():
-        active_zone, _ = discover_active_zone()
+        active_zone = discover_active_zone()
         if active_zone == 999:
                 return err_msg
         active_zone.pause()
@@ -391,82 +349,91 @@ def pause():
 
 @route('/next')
 def next():
-        active_zone, _ = discover_active_zone()
+        active_zone = discover_active_zone()
         if active_zone == 999:
                 return err_msg
         active_zone.next()
-        redirect('/player')
+        redirect('/ctct')
 
 
 @route('/previous')
 def previous():
-        active_zone, _ = discover_active_zone()
+        active_zone = discover_active_zone()
         if active_zone == 999:
                 return err_msg
         active_zone.previous()
         redirect('/player')
 
-@route('/play_pause')
-def play_pause():
-        active_zone, _ = discover_active_zone()
+@route('/seek/<secs>')
+def play_pause(secs):
+        active_zone = discover_active_zone()
         if active_zone == 999:
                 return err_msg
-        TState = active_zone.curTransState
+        m, s = divmod(int(secs), 60)
+        h, m = divmod(m, 60)
+        hh_mm_ss = "%02d:%02d:%02d" % (h, m, s)
+        active_zone.seek(hh_mm_ss)
+
+@route('/track/<no>')
+def play_pause(no):
+        active_zone = discover_active_zone()
+        if active_zone == 999:
+                return err_msg
+        active_zone.seek(no, unit='TRACK_NR')
+
+@route('/play_pause')
+def play_pause():
+        active_zone = discover_active_zone()
+        if active_zone == 999:
+                return err_msg
+        TState = str(active_zone.curTransState)
         if str(TState) == "STOPPED" or str(TState) == "PAUSED_PLAYBACK":
                 active_zone.mute = False
                 active_zone.play()
         else:
                 active_zone.pause()
-        redirect('/player')
+                sleep(0.3)
+        redirect('/ctct')
 
 
 @route('/comehome')
 def comehome():
         URI = "http://dradio_mp3_dwissen_m.akacast.akamaistream.net/7/728/142684/v1/gnl.akacast.akamaistream.net/dradio_mp3_dwissen_m"
-        active_zone, _ = discover_active_zone()
+        active_zone = discover_active_zone()
         if active_zone == 999:
                 return err_msg
-        TState = active_zone.curTransState
+        TState = str(active_zone.curTransState)
         if str(TState) == "STOPPED" or str(TState) == "PAUSED_PLAYBACK":
                 active_zone.mute = False
                 active_zone.volume = 50
                 active_zone.playURI(URI)
                 return 'Welcome Home!'
 
-@route('/play/drwissen') # deprecated, use /fav/<no> instead.
-def drwissen():
-        URI = "http://dradio_mp3_dwissen_m.akacast.akamaistream.net/7/728/142684/v1/gnl.akacast.akamaistream.net/dradio_mp3_dwissen_m"
-        devices = raumfeld.discover()
-        if len(devices) > 0:
-                speaker = devices[l_zone]
-                speaker.playURI(URI)
-        redirect('/player')
-
 ### Volume Control
 
 @route('/mute')
 def mute():
-        active_zone, _ = discover_active_zone()
+        active_zone = discover_active_zone()
         if active_zone == 999:
                 return err_msg
         active_zone.mute = True
-        redirect('/player')
+        redirect('/ctct')
 
 @route('/vol/<no>')
 def vol(no):
-        active_zone, _ = discover_active_zone()
+        active_zone = discover_active_zone()
         if active_zone == 999:
                 return err_msg
         active_zone.mute = False
         active_zone.volume = int(no)
 
-        redirect('/player')
+        redirect('/ctct')
 
 
 ### Podcast support
 
 def pod_read():
-        with open('podcasts', 'a+') as f:
+        with codecs.open('podcasts', 'a+', 'UTF-8') as f:
                 podcasts = f.readlines()
         podcasts = [each.replace('\n', '') for each in podcasts]
         podcasts = [each.split(';') for each in podcasts]
@@ -479,62 +446,88 @@ def pod_parse_feed(feed_url):
         file.close()
         tree = ET.fromstring(data)
         title = tree[0].find('title').text
+
+        valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
+        nothing_special = ''.join(c for c in title if c in valid_chars)
+        sane_title = re.sub(' ', '', nothing_special)
+
+        ep_title = tree[0].find('item').find('title').text
+        host = request.get_header('host')
         try:
             img = tree[0].find('image').find('url').text
             img_file = urllib.URLopener()
-            img_file.retrieve(img, "images/" + title + ".png")
-            img = 'http://' + host + '/images/' + title + '.png'
-            img_path = '/images/' + title + '.png'
+            img_file.retrieve(img, u"images/" + sane_title + u".png")
+            img = u'http://' + host + u'/images/' + sane_title + u'.png'
+            img_path = u'/images/' + sane_title + u'.png'
         except:
-            host = request.get_header('host')
             try:
-                ns = {'itunes':'http://www.itunes.com/dtds/podcast-1.0.dtd'}
-                img = tree[0].find('itunes:image', ns).attrib['href']
+                ns = {u'itunes':u'http://www.itunes.com/dtds/podcast-1.0.dtd'}
+                img = tree[0].find(u'itunes:image', ns).attrib[u'href']
                 img_file = urllib.URLopener()
-                img_file.retrieve(img, "images/" + title + ".png")
-                img = 'http://' + host + '/images/' + title + '.png'
-                img_path = '/images/' + title + '.png'
+                img_file.retrieve(img, u"images/" + sane_title + u".png")
+                img = u'http://' + host + u'/images/' + sane_title + u'.png'
+                img_path = u'/images/' + sane_title + u'.png'
             except:
-                img = 'http://' + host + '/images/podcast2_www.png'
-                img_path = '/images/podcast2_www.png'
-        return tree, title, img, img_path
+                img = u'http://' + host + u'/images/podcast2_www.png'
+                img_path = u'/images/podcast2_www.png'
+        return tree, title, img, img_path, ep_title
+
+def play_podcast_fun(feed_url):
+    tree, title, img, _, ep_title = pod_parse_feed(feed_url)
+    URI = tree[0].find('item').find('enclosure').attrib['url']
+    URIMeta = u''.join([u'<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" xmlns:raumfeld="urn:schemas-raumfeld-com:meta-data/raumfeld"><container id="0/" parentID="0/" restricted="1" childCount="1"><raumfeld:totalPlaytime>1:02:20</raumfeld:totalPlaytime><upnp:albumArtURI dlna:profileID="JPEG_TN">',img,u'</upnp:albumArtURI><raumfeld:name>Album</raumfeld:name><upnp:artist>',title,u'</upnp:artist><upnp:album>','Podcast',u'</upnp:album><upnp:class>object.container.album.musicAlbum</upnp:class><dc:date>3000</dc:date><dc:title>',ep_title,u'</dc:title><raumfeld:section>My Music</raumfeld:section></container></DIDL-Lite>'])
+
+    active_zone = discover_active_zone()
+    if active_zone == 999:
+            return err_msg
+    active_zone.playURI(URI, URIMeta)
+
+@route('/playPodcast/<no>')
+def play_podcast(no):
+    no = int(no) - 1
+    podcasts = pod_read()
+    feed_url = podcasts[no][1]
+    play_podcast_fun(feed_url)
+
 
 @post('/playPodcast')
 def playPodcastPost():
         feed_url = request.forms.get('feed_url')
-        tree, title, img, _ = pod_parse_feed(feed_url)
-        URI = tree[0].find('item').find('enclosure').attrib['url']
-        #URIMeta = ''.join(['<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" xmlns:raumfeld="urn:schemas-raumfeld-com:meta-data/raumfeld"><container><dc:title>',title,'</dc:title></container></DIDL-Lite>']).encode('utf8')
-
-        active_zone, _ = discover_active_zone()
-        if active_zone == 999:
-                return err_msg
-        active_zone.playURI(URI)
-
-        redirect('/player')
+        play_podcast_fun(feed_url)
 
 @post('/addPodcast')
 def addPodcast():
         feed_url = request.forms.get('feed_url')
-        _, title, img, img_path = pod_parse_feed(feed_url)
+        _, title, img, img_path, _ = pod_parse_feed(feed_url)
 
-        with open('podcasts', 'a+') as f:
+        with codecs.open('podcasts', 'a+', 'UTF-8') as f:
                 content = f.readlines()
 
         content = [each.replace('\n', '') for each in content]
         entry = ';'.join([title, feed_url, img, img_path])
         content.append(entry)
 
-        with open('podcasts','w') as f:
+        with codecs.open('podcasts','w', 'UTF-8') as f:
                 for item in content:
-                        f.write('%s\n' % item.encode('utf8'))
+                        f.write('%s\n' % item)
         redirect('/player')
 
+@route('/delPodcast/<no>')
+def addPodcast(no):
+        no = int(no) - 1
+        with codecs.open('podcasts', 'a+', 'UTF-8') as f:
+                content = f.readlines()
+        content = [each.replace('\n', '') for each in content]
+        del content[no]
+        with codecs.open('podcasts','w', 'UTF-8') as f:
+                for item in content:
+                        f.write('%s\n' % item)
+        redirect('/player')
 
 ### Favorites
 
 def read_favs(no=1):
-        with open('favorites', 'a+') as f:
+        with codecs.open('favorites', 'a+', 'UTF-8') as f:
                 content = f.readlines()
         alternater = 0
         counter = 0
@@ -553,11 +546,11 @@ def read_favs(no=1):
 
         for i in range(1,len(URIs)):
                 if Meta[i] == '':
-                        Meta[i] = ''.join(['<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" xmlns:raumfeld="urn:schemas-raumfeld-com:meta-data/raumfeld"><container><dc:title>',URIs[i],'</dc:title></container></DIDL-Lite>'])
+                        Meta[i] = u''.join([u'<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/" xmlns:raumfeld="urn:schemas-raumfeld-com:meta-data/raumfeld"><container><dc:title>',URIs[i],u'</dc:title></container></DIDL-Lite>'])
 
         no = int(no) - 1
 
-        trees = [ET.fromstring(each) for each in Meta]
+        trees = [ET.fromstring(each.encode('UTF-8')) for each in Meta]
         namespaces = {'dc': 'http://purl.org/dc/elements/1.1/', 'upnp':'urn:schemas-upnp-org:metadata-1-0/upnp/'}
         titles = [tree[0].find('dc:title', namespaces).text for tree in trees]
         cover_imgs = [tree[0].find('upnp:albumArtURI', namespaces).text for tree in trees]
@@ -573,7 +566,7 @@ def fav(no):
                 return 'This favorite has not been set yet. Use /addfav to add a favorite.'
         favURI = URIs[no]
         favMeta = Meta[no]
-        active_zone, _ = discover_active_zone()
+        active_zone = discover_active_zone()
         if active_zone == 999:
                 return err_msg
         active_zone.playURI(favURI, favMeta)
@@ -583,40 +576,58 @@ def fav(no):
 @route('/setfav/<no>')
 def setfav(no):
         no, URIs, Meta, _, _ = read_favs(no)
-    	if len(URIs) == 0:
+        if len(URIs) == 0:
     		return 'No Favorites have been set yet. Use /addfav to add a favorite.'
-    	elif len(URIs) <= no:
+        elif len(URIs) <= no:
     		return 'This favorite has not been set yet. Use /addfav to add a favorite.'
 
-        active_zone, _ = discover_active_zone()
+        active_zone = discover_active_zone()
         if active_zone == 999:
-                return err_msg
-    	URIs[no] = active_zone.currentURI()
-    	Meta[no] = active_zone.currentURIMetaData()
+            return err_msg
+        URIs[no] = active_zone.currentURI
+        Meta[no] = active_zone.currentURIMetaData
 
-    	out_list = []
-    	for i in range(0,len(URIs)):
-    		      out_list.append(URIs[i])
-    		      out_list.append(Meta[i])
-    	with open('favorites','w') as f:
-    		      for item in out_list:
-      			             f.write("%s\n" % item)
+        out_list = []
+        for i in range(0,len(URIs)):
+            out_list.append(URIs[i])
+            out_list.append(Meta[i])
+    	with codecs.open('favorites','w', encoding='UTF-8') as f:
+            for item in out_list:
+                f.write("%s\n" % item)
         redirect('/player')
 
 
 @route('/addfav')
 def addfav():
         _, URIs, Meta, _, _ = read_favs()
-        active_zone, _ = discover_active_zone()
+        active_zone = discover_active_zone()
         if active_zone == 999:
                 return err_msg
-        URIs.append(active_zone.currentURI())
-        Meta.append(active_zone.currentURIMetaData())
+        URIs.append(active_zone.currentURI)
+        Meta.append(active_zone.currentURIMetaData)
         out_list = []
         for i in range(0,len(URIs)):
                 out_list.append(URIs[i])
                 out_list.append(Meta[i])
-        with open('favorites','w') as f:
+        with codecs.open('favorites','w', encoding='UTF-8') as f:
+                for item in out_list:
+                        f.write("%s\n" % item)
+        redirect('/player')
+
+@route('/addfav/track')
+def addfav_track():
+        _, URIs, Meta, _, _ = read_favs()
+        active_zone = discover_active_zone()
+        if active_zone == 999:
+                return err_msg
+        URIs.append(active_zone.trackURI)
+        _, _, Me, _, _, _ = active_zone.track_pos_info
+        Meta.append(Me)
+        out_list = []
+        for i in range(0,len(URIs)):
+                out_list.append(URIs[i])
+                out_list.append(Meta[i])
+        with codecs.open('favorites','w', encoding='UTF-8') as f:
                 for item in out_list:
                         f.write("%s\n" % item)
         redirect('/player')
@@ -629,10 +640,10 @@ def info():
         devices = raumfeld.discover()
         if len(devices) > 0:
                 speaker = devices[l_zone]
-                curURI = speaker.currentURI()
-                curMeta = speaker.currentURIMetaData()
-                trackURI = speaker.trackURI()
-                trackMeta = speaker.trackMetaData()
+                curURI = speaker.currentURI
+                curMeta = speaker.currentURIMetaData
+                trackURI = speaker.trackURI
+                trackMeta = speaker.trackMetaData
 
                 namespaces = {'dc':'http://purl.org/dc/elements/1.1/','upnp':'urn:schemas-upnp-org:metadata-1-0/upnp/','raumfeld':'urn:schemas-raumfeld-com:meta-data/raumfeld/'}
 
@@ -641,7 +652,7 @@ def info():
                 try:
                     curURI_title = curMeta_tree[0].find('dc:title', namespaces).text
                 except :
-                    curURU_titlt = '-'
+                    curURI_titlt = '-'
                 try:
                     track_title = trackMeta_tree[0].find('dc:title', namespaces).text
                 except :
@@ -693,7 +704,32 @@ def info():
                 </html>
         ''', curURI_img=curURI_img, track_img=track_img, track_artist=track_artist, track_album = track_album, curURI_title=curURI_title, track_title=track_title, curURI=curURI, curMeta=curMeta, trackURI=trackURI, trackMeta=trackMeta, devices=devices)
 
-### Player UI (for HTML see player.tbl)
+### Controls
+
+@route('/ctct')
+def sbsb():
+
+    active_zone = discover_active_zone()
+    current_volume = str(active_zone.volume)
+    sleep(1)
+    zone_room_names, tree = zone_management(zones)
+    if zones_on:
+        zone_nos = range(0, len(zones))
+        active_zone_str_helper = [no == l_zone for no in zone_nos]
+        active_zone_str_helper = [re.sub('True', 'Active', str(no)) for no in active_zone_str_helper]
+        active_zone_str_helper = [re.sub('False', 'Activate', str(no)) for no in active_zone_str_helper]
+    else:
+        active_zone_str_helper = []
+
+    TState = str(active_zone.curTransState)
+    if str(TState) == "STOPPED" or str(TState) == "PAUSED_PLAYBACK":
+            play_button = 'play_shiny.png'
+    else:
+            play_button = 'pause_shiny.png'
+    return template('controls', play_button=play_button, zones_on=zones_on, zone_room_names=zone_room_names, tree=tree, active_zone_str_helper=active_zone_str_helper, current_volume=current_volume)
+
+
+### Player UI (for HTML see player.tbl /shinynew_player.tbl)
 
 @route('/player')
 def player():
@@ -702,12 +738,101 @@ def player():
         podcasts = pod_read()
         return template('shinynew_player', fav_count = fav_count, titles = titles, podcasts = podcasts, cover_imgs = cover_imgs)
 
-@route('/shinynew')
-def player():
-        _, URIs, Meta, titles, cover_imgs = read_favs()
-        fav_count = range(1,len(URIs) + 1)
-        podcasts = pod_read()
-        return template('shinynew_player', fav_count = fav_count, titles = titles, podcasts = podcasts, cover_imgs = cover_imgs)
+# Seekbar App
 
-debug(True)
-run(host='0.0.0.0', port = 8080, reloader = True)
+app = Bottle()
+
+def time_getter(active_seekbar_zone):
+    try:
+        absTime = str(active_seekbar_zone.trackAbsTime)
+        duration = str(active_seekbar_zone.trackDuration)
+    except :
+        duration = '00:00:00'
+        absTime = '00:00:00'
+    return absTime, duration
+
+def data_getter(active_seekbar_zone):
+    namespaces = {'dc':'http://purl.org/dc/elements/1.1/','upnp':'urn:schemas-upnp-org:metadata-1-0/upnp/','raumfeld':'urn:schemas-raumfeld-com:meta-data/raumfeld/'}
+    trackMeta = active_seekbar_zone.trackMetaData
+    trackMeta_tree = ET.fromstring(unicode(trackMeta))
+    try:
+        track_img = trackMeta_tree[0].find('upnp:albumArtURI', namespaces).text
+    except:
+        track_img = '/images/audio_www.png'
+    try:
+        track_title = trackMeta_tree[0].find('dc:title', namespaces).text
+    except:
+        track_title = 'Unknown'
+    try:
+        track_album = trackMeta_tree[0].find('upnp:album', namespaces).text
+        track_artist = trackMeta_tree[0].find('upnp:artist', namespaces).text
+    except:
+        track_album = ''
+        track_artist = ''
+    return track_title, track_img, track_artist, track_album
+
+def ws_maker():
+    zones_seekbar = raumfeld.discover(1,1)
+    if len(zones_seekbar) < 1:
+            print('No zones found.')
+    active_seekbar_zone = zones_seekbar[l_zone]
+    wsock = request.environ.get('wsgi.websocket')
+    if not wsock:
+        abort(400, 'Expected WebSocket request.')
+    absTime_old = ''
+    old_track_title = '_Old__Title_'
+    flush =  1
+    while 1:
+        sleep(0.3)
+        try:
+            ws_ms_short = time_getter(active_seekbar_zone)
+            ws_ms_error_list = ['ws_ms_short Success!']
+
+            try:
+                ws_ms_long = data_getter(active_seekbar_zone)
+                ws_ms_error_list.append('ws_ms_long Success!')
+            except:
+                ws_ms_long = ['', 'http://lorempixel.com/300/300/nightlife/broken', '','','']
+
+            if old_track_title != ws_ms_long[0]:
+                ws_ms = "l|||" + "|||".join(ws_ms_short) + "|||" + "|||".join(ws_ms_long)
+                old_track_title = ws_ms_long[0]
+                ws_ms_error_list.append(ws_ms)
+                flushs = 11
+            else:
+                ws_ms = "s|||" + "|||".join(ws_ms_short)
+                ws_ms_error_list.append(ws_ms)
+                flushs = 1
+            wsock.send(ws_ms)
+        except WebSocketError:
+            break
+
+mount('/seekbar/',app)
+
+# This creates a queue object for every request.
+
+@app.route('/websocket')
+def handle_websocket():
+    body = queue.Queue()
+    worker = ws_maker()
+    worker.on_data(body.put)
+    worker.on_finish(lambda: body.put(StopIteration))
+    worker.start()
+    return body
+
+@route('/sbsb')
+def sbsb():
+    return template('cover_seekbar')
+
+
+from gevent.pywsgi import WSGIServer
+from geventwebsocket import WebSocketError
+from geventwebsocket.handler import WebSocketHandler
+host = "0.0.0.0"
+port = 8080
+server = WSGIServer((host, port), default_app(), handler_class=WebSocketHandler)
+print "Server running @ http://%s:%s/" % (host,port)
+server.serve_forever()
+#debug(True)
+#run(host='0.0.0.0', port = 8080, reloader = True)
+#run(host='0.0.0.0', port=8080, server='gevent')

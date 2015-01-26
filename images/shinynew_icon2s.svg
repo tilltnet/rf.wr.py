@@ -24,10 +24,10 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="4"
-     inkscape:cx="1221.1251"
-     inkscape:cy="173.98118"
+     inkscape:cx="1231.4216"
+     inkscape:cy="59.051841"
      inkscape:document-units="px"
-     inkscape:current-layer="g4705"
+     inkscape:current-layer="g4036"
      showgrid="true"
      inkscape:window-width="1920"
      inkscape:window-height="1018"
@@ -39,6 +39,19 @@
      inkscape:guide-bbox="true" />
   <defs
      id="defs4">
+    <marker
+       inkscape:stockid="TriangleOutS"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="TriangleOutS"
+       style="overflow:visible">
+      <path
+         id="path4515"
+         d="M 5.77,0.0 L -2.88,5.0 L -2.88,-5.0 L 5.77,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt"
+         transform="scale(0.2)" />
+    </marker>
     <marker
        inkscape:stockid="Arrow2Mstart"
        orient="auto"
@@ -1683,7 +1696,8 @@
            x="1739.2017"
            y="763.1441" />
         <g
-           id="g4710">
+           id="g4710"
+           transform="translate(-159.5,-12.75)">
           <g
              id="g4718"
              transform="translate(124.25,15.25)">
@@ -1699,49 +1713,93 @@
                inkscape:export-ydpi="150" />
             <g
                id="g4698"
-               transform="matrix(0.584952,0.81106791,-0.81106791,0.584952,1469.6439,-1250.4816)"
-               style="opacity:1">
+               transform="matrix(0.584952,0.81106791,-0.81106791,0.584952,1469.6439,-1250.4816)">
               <g
                  id="g4705">
                 <path
                    sodipodi:type="arc"
-                   style="opacity:0.21238938;color:#000000;fill:#ffffff;stroke:none;stroke-width:1.60000002000000000;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+                   style="opacity:0.21238936;color:#000000;fill:#ffffff;stroke:none;stroke-width:1.60000002;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
                    id="path4548-3-2"
                    sodipodi:cx="1302"
                    sodipodi:cy="1112.3622"
                    sodipodi:rx="120"
                    sodipodi:ry="120"
-                   d="m 1422,1112.3622 c 0,66.2742 -53.7258,120 -120,120 -66.2742,0 -120,-53.7258 -120,-120 0,-66.2742 53.7258,-120.00002 120,-120.00002 66.2742,0 120,53.72582 120,120.00002 z"
+                   d="m 1422,1112.3622 a 120,120 0 1 1 -240,0 120,120 0 1 1 240,0 z"
                    transform="matrix(0.25,0,0,0.25,1663.8625,620.06227)"
                    inkscape:export-filename="C:\Users\Till\ownCloud\Privat\raumfeld\rfwrpy\images\refresh.png"
                    inkscape:export-xdpi="150"
                    inkscape:export-ydpi="150" />
                 <path
                    sodipodi:type="arc"
-                   style="opacity:0.19911504;color:#000000;fill:#000010;stroke:none;stroke-width:1.60000002000000000;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+                   style="opacity:0.19911505;color:#000000;fill:#000010;stroke:none;stroke-width:1.60000002;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
                    id="path4548"
                    sodipodi:cx="1302"
                    sodipodi:cy="1112.3622"
                    sodipodi:rx="120"
                    sodipodi:ry="120"
-                   d="m 1422,1112.3622 c 0,66.2742 -53.7258,120 -120,120 -66.2742,0 -120,-53.7258 -120,-120 0,-66.2742 53.7258,-120.00002 120,-120.00002 66.2742,0 120,53.72582 120,120.00002 z"
+                   d="m 1422,1112.3622 a 120,120 0 1 1 -240,0 120,120 0 1 1 240,0 z"
                    transform="matrix(0.16666667,0,0,0.16666667,1772.3625,722.75911)"
                    inkscape:export-filename="C:\Users\Till\ownCloud\Privat\raumfeld\rfwrpy\images\refresh.png"
                    inkscape:export-xdpi="150"
                    inkscape:export-ydpi="150" />
                 <path
                    sodipodi:type="arc"
-                   style="opacity:0.21681416;color:#000000;fill:#ffffff;stroke:none;stroke-width:1.60000002000000000;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+                   style="opacity:0.21681417;color:#000000;fill:#ffffff;stroke:none;stroke-width:1.60000002;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
                    id="path4548-3"
                    sodipodi:cx="1302"
                    sodipodi:cy="1112.3622"
                    sodipodi:rx="120"
                    sodipodi:ry="120"
-                   d="m 1422,1112.3622 c 0,66.2742 -53.7258,120 -120,120 -66.2742,0 -120,-53.7258 -120,-120 0,-66.2742 53.7258,-120.00002 120,-120.00002 66.2742,0 120,53.72582 120,120.00002 z"
+                   d="m 1422,1112.3622 a 120,120 0 1 1 -240,0 120,120 0 1 1 240,0 z"
                    transform="matrix(0.08333333,0,0,0.08333333,1880.8625,825.45597)"
                    inkscape:export-filename="C:\Users\Till\ownCloud\Privat\raumfeld\rfwrpy\images\refresh.png"
                    inkscape:export-xdpi="150"
                    inkscape:export-ydpi="150" />
+              </g>
+            </g>
+          </g>
+        </g>
+        <g
+           style="display:inline"
+           id="g4710-1"
+           transform="translate(113.86875,138.73199)"
+           inkscape:export-filename="C:\Users\Till\ownCloud\Privat\raumfeld\rfwrpy\images\delete.png"
+           inkscape:export-xdpi="150"
+           inkscape:export-ydpi="150">
+          <g
+             id="g4718-7"
+             transform="translate(124.25,15.25)">
+            <rect
+               style="opacity:0.02212387;color:#000000;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.60000002;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+               id="rect4703-4"
+               width="80"
+               height="80"
+               x="1759.5037"
+               y="851.93835"
+               inkscape:export-filename="C:\Users\Till\ownCloud\Privat\raumfeld\rfwrpy\images\refresh.png"
+               inkscape:export-xdpi="150"
+               inkscape:export-ydpi="150" />
+            <g
+               id="g5029"
+               transform="translate(26.162951,4.5961941)"
+               style="fill:#9883af;fill-opacity:1">
+              <g
+                 id="g5062"
+                 transform="matrix(0.689833,0,0,0.689833,605.64759,278.13698)">
+                <g
+                   id="g5066"
+                   transform="translate(-196.95964,-5.5530005)">
+                  <path
+                     style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;baseline-shift:baseline;color:#000000;fill:#aa623e;fill-opacity:0.6507937;fill-rule:nonzero;stroke:none;stroke-width:12.39999962;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans"
+                     d="m 1860.5376,853.21097 a 6.2006198,6.2006198 0 0 0 -4.3125,10.6562 l 24.6875,24.6876 -24.6875,24.7187 a 6.2006198,6.2006198 0 1 0 8.75,8.75 l 24.6875,-24.6875 24.7187,24.6875 a 6.2006198,6.2006198 0 1 0 8.75,-8.75 l -24.6874,-24.7187 24.6874,-24.6876 a 6.2006198,6.2006198 0 0 0 -4.5,-10.6562 6.2006198,6.2006198 0 0 0 -4.25,1.875 l -24.7187,24.7188 -24.6875,-24.7188 a 6.2006198,6.2006198 0 0 0 -4.4375,-1.875 z"
+                     id="path3315"
+                     inkscape:connector-curvature="0" />
+                  <path
+                     style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;baseline-shift:baseline;color:#000000;fill:#d4f0fc;fill-opacity:0.6507937;fill-rule:nonzero;stroke:none;stroke-width:12.39999962;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans"
+                     d="m 1873.6843,868.54197 a 3.3813429,3.3813429 0 0 0 -2.3517,5.81107 l 13.4627,13.46273 -13.4627,13.47968 a 3.3813429,3.3813429 0 1 0 4.7716,4.77158 l 13.4627,-13.46267 13.4797,13.46267 a 3.3813429,3.3813429 0 1 0 4.7715,-4.77158 l -13.4626,-13.47968 13.4626,-13.46273 a 3.3813429,3.3813429 0 0 0 -2.4539,-5.81107 3.3813429,3.3813429 0 0 0 -2.3176,1.02248 l -13.4797,13.47974 -13.4627,-13.47974 a 3.3813429,3.3813429 0 0 0 -2.4199,-1.02248 z"
+                     id="path3315-4"
+                     inkscape:connector-curvature="0" />
+                </g>
               </g>
             </g>
           </g>

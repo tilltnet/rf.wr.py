@@ -105,12 +105,14 @@
                 <a href="/addfav"></a></div>
             </div>
 </div>
+
+
+
 <div class = "main">
-
-
           %for i in range(0,len(podcasts)):
           <div class = "cover" style="background-image: url({{urllib.quote(podcasts[i][3], '/')}}); background-size: 148px 148px; height: 148px; width: 148px">
               <!-- Link -->
+              <div class="corner_button" style="position:relative; height: 20px; width: 20px; left: 128px; padding: 0px 0px 0px 0px; z-index: 2;"><a href="/delPodcast/{{i+1}}"><img width="20" height="20" src="/images/delete.png"></a></div>
             <a href="#" onclick="click_cover('playPodcast', {{i+1}}); return false;"><span></span></a>
 
             <div class="cover_text">
@@ -122,9 +124,8 @@
           %end
 
       </div>
-
-
       </div>
+
 <div class="podbar">
     <div style="float:left; margin-left: 20%; margin-right: 20%">
 
