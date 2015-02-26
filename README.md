@@ -26,8 +26,8 @@ Create a folder in your home directory, download and unzip the files to it:
 
     mkdir ~/rfwr
     cd ~/rfwr
-    wget https://github.com/tilltnet/rf.wr.py/blob/master/zip/rfwrpy0.5alpha.zip
-    unzip rfwrpy0.5alpha.zip
+    wget https://github.com/tilltnet/rf.wr.py/blob/master/zip/rfwrpy0.5alpha2.zip
+    unzip rfwrpy0.5alpha2.zip
 
 Manually downloading and unzipping the zip File via the github website will work just as well.
 
