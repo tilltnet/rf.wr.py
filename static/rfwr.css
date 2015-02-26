@@ -9,7 +9,7 @@
     _top:expression(eval(document.documentElement.scrollTop+
         (document.documentElement.clientHeight-this.offsetHeight)));
     height:35px;
-    background-color: rgba(55,55,55,0.6);
+    background-color: rgba(55,55,55,0.7);
     width: 100%;
 }
 
@@ -43,6 +43,24 @@ div.controlElement{
   font-size: 9pt;
 }
 
+div.controlElement_4{
+  width: 148px;
+  height: 148px;
+  margin-top: 0px;
+  margin-bottom: 4px;
+  font-size: 9pt;
+}
+
+div.controlElement_small{
+  width: auto;
+  height: 72px;
+  margin-right: 4px;
+  margin-top: 0px;
+  margin-bottom: 4px;
+  font-size: 9pt;
+  float: left;
+}
+
 div.control{
   height: 100%;
   float: left;
@@ -59,6 +77,12 @@ img.controlElementIMG{
   width: 148px;
 }
 
+img.controlElementIMG_small{
+  height: auto;
+  width: 72px;
+}
+
+
 div.controlElementVOL{
   height: 4px;
   width: 148px;
@@ -67,7 +91,7 @@ div.controlElementVOL{
 }
 
 div.controlElementVOL:hover{
-  background-color:#b3b3b3;
+  background-color: #b3b3b3;
 }
 
 div.controlElementVOLBAR{
@@ -87,7 +111,7 @@ div.controlElementMUTE{
   margin-bottom: 4px;
 }
 
-div.controlElementMUTE:hover, div.controlElement:hover{
+div.controlElementMUTE:hover, div.controlElement:hover, div.controlElement_small:hover{
    background-color: #ffffff;
 }
 

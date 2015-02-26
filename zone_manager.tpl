@@ -110,7 +110,7 @@
                     %i = i + 1
             </div>
             %end
-                   Active Zone: {{l_zone}}<br>
+                   Active Zone: {{}}<br>
             %if len(tree) > 1:
               <div class="controlElement" style="background-color: grey;">
                   <div class = "unassigned"> Unassigned:

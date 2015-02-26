@@ -15,28 +15,31 @@
         </style>
 
         <script language="javascript">
+
             function click_cover(type , no) {
               xmlHttp = new XMLHttpRequest();
               xmlHttp.open( "GET", '/' + type + '/' + no, true);
               xmlHttp.send( null );
               }
+
             function fix_grid() {
               var grid_width = document.getElementById('grids').offsetWidth;
-              var covers_per_row = Math.floor(grid_width/150);
+              var covers_per_row = Math.floor(grid_width / 150);
               console.log(covers_per_row);
               var perfect_grid_width = covers_per_row * 150 + covers_per_row;
               var perfect_cover_seekbar_margin = grid_width - perfect_grid_width - (covers_per_row - 3);
-              console.log(perfect_grid_width);
+              //console.log(perfect_grid_width);
 
               document.getElementById('cover_seekbar').setAttribute("style", "margin-right:" + perfect_cover_seekbar_margin + "px");
             }
+
             function fix_controls_height() {
               iframe = document.getElementById('iframe_control');
               innerDoc = iframe.contentDocument || iframe.contentWindow.document;
               controlElement_count = innerDoc.getElementsByClassName("controlElement").length;
-              perfect_height = (controlElement_count + 2) * 150 + 15;
+              perfect_height = (controlElement_count + 3) * 150 + 15;
               document.getElementById('iframe_control').setAttribute("height",perfect_height)
-              console.log(perfect_height + " : " + controlElement_count);
+              //console.log(perfect_height + " : " + controlElement_count);
             }
         </script>
 
@@ -127,16 +130,25 @@
       </div>
 
 <div class="podbar">
-    <div style="float:left; margin-left: 20%; margin-right: 20%">
+  <div style="margin: 0 auto; width: 800px;">
+    <div style="float: left; margin: 0px 5px 0px 5px;">
 
       <form action="/playURI" method="post" style="margin-top: 4px;">
       External Media <input name="URI" type="text" size="15" placeholder="file or stream URL"/><input value="Play" type="submit" />
     </form></div>
-<div><form action="/addPodcast" method="post" style="margin-top: 4px;">
-  Podcast <input name="feed_url" type="text" size="15" placeholder = "RSS feed URL"/>
-  <input value="+" type="submit" />
-</form>
-</div>
+
+    <div style="float: left; margin: 0px 5px 0px 5px;"><form action="/addPodcast" method="post" style="margin-top: 4px;">
+      Podcast <input name="feed_url" type="text" size="15" placeholder = "RSS feed URL"/>
+      <input value="+" type="submit" />
+    </form>
+    </div>
+
+    <div style="float: left; margin: 0px 5px 0px 5px"><form action="/track" method="post" style="margin-top: 4px;">
+      Track <input name="no" type="text" size="3" placeholder = "No."/>
+      <input value="Play" type="submit" />
+    </form>
+    </div>
+  </div>
 </div>
 
     </body>
