@@ -7,28 +7,27 @@ raumfeld web remote in python
 
 rf.wr is a small webserver that let's you control the playback of your raumfeld system through a browser. You can submit URIs of audio-streams and -files, favorites of currently playing content can be set (These favorites differ from the one in the official Raumfeld App!) and there is a rudimentary support for podcast playback. **Update(11.01.2015): The newest version includes a Music Zone Manager and supports http commands for building and changing music zones.** You might want to run rf.wr on a small embedded linux machine as the raspberry pi or possibly your router (basically every system that can run python code should be compatible).
 
-rf.wr.py uses [raumfeld-python](https://github.com/tfeldmann/python-raumfeld) (with minor changes) and [bottle.py](http://bottlepy.org/docs/dev/index.html) (with gevent as the server engine).
+rf.wr.py uses [PyRaumfeld](https://github.com/maierp/PyRaumfeld) and [bottle.py](http://bottlepy.org/docs/dev/index.html) (with gevent as the server engine).
 
-Install
+Install (for 0.5alpha2)
 -------
 *Notice:* Starting with 0.5 rf.wr [binaries for different systems are available](https://github.com/tilltnet/rf.wr.py/tree/master/zip). For now, only Windows 64-bit and GNU/Linux 64-bit versions are provided, for all other platforms follow the instructions for manual installation below.
 
 *These instructions should basically work on most GNU/Linux and MacOSX systems. With python installed it is possible to run rf.wr on a Windows machine (use packaged binaries or use/install python2.7).*
 
-You need to have python2.7 at least and git needs to be installed.
+You need to have python2.7 at least and git needs to be installed for the following instructions.
 
-The libraries bottly.py, gevent, gevent-websocket and raumfeld-python are required to run the server. If you installed raumfeld-python before unistall it with 'pip uninstall raumfeld'. Then run the following commands to install the libraries.
+The libraries bottly.py, gevent, gevent-websocket and PyRaumfeld are required to run the server. If you installed raumfeld-python or PyRaumfeld before unistall it with 'pip uninstall raumfeld'. Then run the following commands to install the libraries.
 
     pip install pysimplesoap bottle gevent gevent-websocket
-    pip install git+git://github.com/tilltnet/python-raumfeld
+    pip install git+git://github.com/tilltnet/PyRaumfeld
 
 Create a folder in your home directory, download and unzip the files to it:
 
-
     mkdir ~/rfwr
     cd ~/rfwr
-    wget https://github.com/tilltnet/rf.wr.py/zip/rfwrpy0.5alpha.zip
-    unzip rfwrpy0.5alpha
+    wget https://github.com/tilltnet/rf.wr.py/blob/master/zip/rfwrpy0.5alpha.zip
+    unzip rfwrpy0.5alpha.zip
 
 Manually downloading and unzipping the zip File via the github website will work just as well.
 
@@ -80,6 +79,7 @@ a seperate UI.
 /playURI - GET - let's you enter URI to stream
 /vol/<no> - Set volume with <no> ranging between 0 and 100 (careful!).
 /info - Shows current transport info (CurrentURI, CurrentURIMetaData, TrackURI, TrackMetaData).
+/track/<no> - Play specified track no. of the current playlist.
 ```
 ###Music Zones
 
@@ -102,7 +102,7 @@ a seperate UI.
 /delPodcast/<no>
 ```
 
-###Special (These might be dropped soon.)
+###Special
 ```
 /comehome - Checks if playback has STOPPED, if so it sends the command to play a stream and welcomes the user home.
 ```
