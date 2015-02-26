@@ -5,7 +5,7 @@ raumfeld web remote in python
 
 ![Screenshot](/images/features.png)
 
-rf.wr is a small webserver that let's you control the playback of your raumfeld system through a browser. You can submit URIs of audio-streams and -files, favorites of currently playing content can be set (These favorites differ from the one in the official Raumfeld App!) and there is a rudimentary support for podcast playback. **Update(11.01.2015): The newest version includes a Music Zone Manager and supports http commands for building and changing music zones.** You might want to run rf.wr on a small embedded linux machine as the raspberry pi or possibly your router.
+rf.wr is a small webserver that let's you control the playback of your raumfeld system through a browser. You can submit URIs of audio-streams and -files, favorites of currently playing content can be set (These favorites differ from the one in the official Raumfeld App!) and there is a rudimentary support for podcast playback. **Update(11.01.2015): The newest version includes a Music Zone Manager and supports http commands for building and changing music zones.** You might want to run rf.wr on a small embedded linux machine as the raspberry pi or possibly your router (basically every system that can run python code should be compatible).
 
 rf.wr.py uses [raumfeld-python](https://github.com/tfeldmann/python-raumfeld) (with minor changes) and [bottle.py](http://bottlepy.org/docs/dev/index.html) (with gevent as the server engine).
 
@@ -13,7 +13,7 @@ Install
 -------
 *Notice:* Starting with 0.5 rf.wr [binaries for different systems are available](https://github.com/tilltnet/rf.wr.py/tree/master/zip). For now, only Windows 64-bit and GNU/Linux 64-bit versions are provided, for all other platforms follow the instructions for manual installation below.
 
-*These instructions should basically work on most GNU/Linux and MacOSX systems. With python installed it is possible to run rf.wr on a Windows machine (untestet!).*
+*These instructions should basically work on most GNU/Linux and MacOSX systems. With python installed it is possible to run rf.wr on a Windows machine (use packaged binaries or use/install python2.7).*
 
 You need to have python2.7 at least and git needs to be installed.
 
