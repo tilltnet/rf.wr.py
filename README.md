@@ -5,7 +5,7 @@ rf.wr is a remote for the raumfeld multi-room audio system. It runs as a server 
 
 ![Screenshot](/images/features2.png)
 
-rf.wr provides almost all functions of the official raumfeld app to every device connect to your local network that has a web browser installed. In addition it allows you to playback external streams, audio files and podcasts.
+rf.wr provides almost all functions of the official raumfeld app to every device connected to your local network that has a web browser installed. In addition it allows you to playback external streams, audio files and podcasts.
 
 rf.wr.py uses [PyRaumfeld](https://github.com/maierp/PyRaumfeld) and [bottle.py](http://bottlepy.org/docs/dev/index.html) (with gevent as the server engine).
 
