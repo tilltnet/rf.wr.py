@@ -1,3 +1,13 @@
+body {
+    overflow-x:hidden;
+}
+
+ol {
+    list-style-type: 1;
+    padding: 0px;
+    margin: 0px;
+}
+
 
 /* footer - External Media*/
 
@@ -9,14 +19,9 @@
     _top:expression(eval(document.documentElement.scrollTop+
         (document.documentElement.clientHeight-this.offsetHeight)));
     height:35px;
-    background-color: rgba(55,55,55,0.7);
+    background-color: #2B4551;
     width: 100%;
 }
-
-
-
-
-
 
 /* General Link Properties*/
 <!--A{
@@ -41,6 +46,7 @@ div.controlElement{
   margin-top: 2px;
   margin-bottom: 4px;
   font-size: 9pt;
+  transition: 0.8s ease;
 }
 
 div.controlElement_4{
@@ -49,6 +55,7 @@ div.controlElement_4{
   margin-top: 0px;
   margin-bottom: 4px;
   font-size: 9pt;
+
 }
 
 div.controlElement_small{
@@ -59,6 +66,7 @@ div.controlElement_small{
   margin-bottom: 4px;
   font-size: 9pt;
   float: left;
+  transition: 0.8s ease;
 }
 
 div.control{
@@ -121,26 +129,29 @@ img.addFav:hover{
 
 /* Cover grids */
 div#grids{
+  position: absolute;
+  left: 180px;
   float: left;
   width: 80%;
   font-size: 9pt;
-}
+1}
 
-@media screen and (max-width: 1200px) {
+
+@media screen and (max-width: 1073px) {
     .container{
       width: 90%;
     }
     div#grids{
-      width: 83%;
+      width: 84%;
     }
 }
 
-@media screen and (max-width: 940px) {
+@media screen and (max-width: 900px) {
     .container{
       width: 90%;
     }
     div#grids{
-      width: 80%;
+      width: 81%;
     }
 }
 
@@ -179,23 +190,41 @@ div.cover{
   font-size: 9pt;
   height: 148px;
   width: 148px;
-  background-color: rgba(170, 170, 170, 0.7);
+  background-color: rgba(170, 170, 170, 0.2);
   background-size: 148px 148px;
   margin-top: 2px;
   margin-bottom: 2px;
   margin-right: 4px;
+
+}
+
+div.cover:active{
+  border: 1px black solid;
+  height: 146px;
+  width: 146px;
+  background-size: 146px 146px;
+
 }
 
 div.cover_text{
-  position: relative;
+  position: absolute;
   float: left;
   font-size: 10pt;
   background-color: rgba(255, 255, 255, 0.8);
   z-index: 2;
-  transition: 0.8s ease;
-  top: 90px;
+  top: 105px;
+
+  width: 100%;
 }
 
+div.corner_button {
+  position:relative;
+  height: 20px;
+  width: 20px;
+  left: 128px;
+  padding: 0px 0px 0px 0px;
+  z-index: 2;
+}
 
 
 /* Zone management */

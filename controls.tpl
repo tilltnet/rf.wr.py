@@ -1,16 +1,17 @@
 <!DOCTYPE html>
   <html>
-      <head>
+        <head>
           <title>rf.wr.py</title>
            <link rel="stylesheet" href="static/normalize.css">
            <link rel="stylesheet" href="static/rfwr.css">
            <style type="text/css">
-   #vol_slice_{{current_volume}}{
-   /*background-color: rgba(255, 255, 255, 0.9);*/
-   border-top: solid 2px;
-   border-color: yellow;
-   }
- </style>
+               #vol_slice_{{current_volume}}{
+               /*background-color: rgba(255, 255, 255, 0.9);*/
+               border-top: solid 2px;
+               border-color: yellow;
+               }
+           </style>
+        </head>
   <body>
       <!-- Controls -->
 
@@ -28,7 +29,7 @@
       </div>
 
       <div class= "controlElement_small">
-        <a href="/info" target="_blank"><img class="controlElementIMG_small" src="images/small_info.png"/></a>
+        <a href="/conf" target="_parent"><img class="controlElementIMG_small" src="images/small_conf.png"/></a>
       </div>
 
       <div class= "controlElement_small"  style="margin-right: 0px">
@@ -50,7 +51,7 @@
                       <div class="zone_content">
                     %for room in zone.getRooms():
                         <div class = "room">
-                            <a href="/drop_room/{{room.Name}}">-&nbsp;{{room.Name}}</a><a class="room_plus_{{active_zone_str_helper[i]}}"  href="/add_room/{{room}}">[+]</a>
+                            <a href="/drop_room/{{room.Name}}">-&nbsp;{{room.Name}}</a><a class="room_plus_{{active_zone_str_helper[i]}}"  href="/add_room/{{room.Name}}">[+]</a>
 
                             </div>
                     %end
@@ -72,26 +73,27 @@
     %end
   %end
 
+<div class = "controlElement">
+  <a target="media_tab" href="/media/0/My Music"><img class="controlElementIMG" src="images/shiny_mymusic.png"/></a>
+</div>
+<div class = "controlElement">
+  <a target="media_tab" href="/media/0/WiMP"><img class="controlElementIMG" src="images/shiny_wimp.png"/></a>
+</div>
+<div class = "controlElement">
+  <a target="media_tab" href="/media/0/RadioTime"><img class="controlElementIMG" src="images/shiny_tunein.png"/></a>
+</div>
+<div class = "controlElement">
+  <a target="media_tab" href="/media/0/Line In"><img class="controlElementIMG" src="images/shiny_linein.png"/></a>
+</div>
+<div class = "controlElement">
+  <a target="media_tab" href="/media/0/Favorites"><img class="controlElementIMG" src="images/shiny_favorites.png"/></a>
+</div>
+<!--<div class = "controlElement">
+  <a target="media_tab" href="/media/0/My Music"><img class="controlElementIMG" src="images/shiny_podcasts.png"/></a>
+</div>-->
 
 
-    <div class="controlElementVOL_cont">
 
-    %for i in range(20,84):
-    <div id="vol_slice_{{100-i}}" class="controlElementVOL" style="background-color: rgba(0, 0, {{i}}, 0.{{100-i}});"></div>
-    %end
 
-    </div>
-    <div class="controlElementVOLBAR"><img class="controlElementIMG" src="images/volbar_shiny.png"></div>
-    <div class="controlElementVOL_cont">
-
-    %for i in range(20,84):
-    <div class="controlElementVOL"><a href="/vol/{{100-i}}"><span></span></a></div>
-    %end
-
-    </div>
-    <div class="controlElementMUTE" style = "position: relative; top: 260px;">
-      <a href="/mute"><img class="controlElementIMG" src="images/mute_shiny.png"/></a>
-    </div>
-  </div>
   </body>
  </html>

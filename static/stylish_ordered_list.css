@@ -1,0 +1,135 @@
+/* stylish ordered list by Kushagra Agarwal (http://cssdeck.com/user/kushsolitary) http://cssdeck.com/labs/stylish-ordered-list */
+<!--A{
+  text-decoration:none;
+  color: unset;
+  }-->
+
+ol {
+  font-family: "Century Gothic", "Helvetica Neue", Arial, sans-serif;
+	counter-reset:li;
+	margin: 0;
+	width: 300px;
+	padding: 0;
+	position: relative;
+	left: 50%;
+	margin-left: -150px;
+  height: 405px;
+}
+
+ol:after {
+	content: '';
+	width: 850px;
+	background: #fff;
+	position: absolute;
+	bottom: -100px;
+	left: -300px;
+
+}
+
+ol:before {
+	content: '';
+	position: absolute;
+	width: 800px;
+
+
+	bottom: -60px;
+	left: -275px;
+	border-radius: 50%;
+
+
+}
+
+ol > li {
+  position: relative;
+  margin: 0 0 0 0;
+  padding: 12px 0 15px 60px;
+  list-style: none;
+  height: 19px;
+
+	-webkit-box-shadow: 0px -2px 1px 0px rgba(0,0,0,0.2);
+	-moz-box-shadow: 0px -2px 1px 0px rgba(0,0,0,0.2);
+	box-shadow: 0px -2px 1px 0px rgba(0,0,0,0.2);
+
+	font-size: 15px;
+	color: #a9a9a9;
+	background: #ffffff;
+	background: -moz-linear-gradient(left,  #ffffff 69%, #dedede 100%);
+	background: -webkit-gradient(linear, left top, right top, color-stop(69%,#ffffff), color-stop(100%,#dedede));
+	background: -webkit-linear-gradient(left,  #ffffff 69%,#dedede 100%);
+	background: -o-linear-gradient(left,  #ffffff 69%,#dedede 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#dedede',GradientType=1 );
+	background: -ms-linear-gradient(left,  #ffffff 69%,#dedede 100%);
+	background: linear-gradient(left,  #ffffff 69%,#dedede 100%);
+}
+
+ol > li#playing, ol > li#playing:before {
+  background: #6F6F6F;
+  background: -moz-linear-gradient(left,  #6F6F6F 69%, #6F6F6F; 100%);
+  background: -webkit-gradient(linear, left top, right top, color-stop(69%,#6F6F6F), color-stop(100%,#286664;));
+  background: -webkit-linear-gradient(left,  #6F6F6F 69%,#6F6F6F 100%);
+  background: -o-linear-gradient(left,  #6F6F6F 69%,#6F6F6F; 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#6F6F6F', endColorstr='#6F6F6F',GradientType=1 );
+  background: -ms-linear-gradient(left,  #6F6F6F 69%,#6F6F6F; 100%);
+  background: linear-gradient(left,  #6F6F6F 69%,#6F6F6F; 100%);
+}
+
+ol > li:first-child {
+	/*-webkit-box-shadow: none;
+	-moz-box-shadow: none;
+	box-shadow: none;
+
+	-webkit-border-radius: 10px 10px 0 0;
+	-moz-border-radius: 10px 10px 0 0;
+	border-radius: 10px 10px 0 0;*/
+
+	border-top: 1px solid #dedede;
+}
+
+ol > li:first-child::before {
+	/*-webkit-border-radius: 10px 0 0 0;
+	-moz-border-radius: 10px 0 0 0;
+	border-radius: 10px 0 0 0;*/
+}
+
+ol > li:before {
+	font-size: 20px;
+    content: counter(li);
+    counter-increment: li;
+    position: absolute;
+	top: 0;
+	left: 0px;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 50px;
+	   height: 45px;
+    padding: 10px;
+    color: #ffd954;
+    background: #af8f22;
+    font-weight: bold;
+    text-align: center;
+}
+
+ol > li:hover {
+	background: #f78f46;
+	color: #a2521d;
+
+	-webkit-box-shadow: none;
+	-moz-box-shadow: none;
+	box-shadow: none;
+}
+
+ol > li#playing:hover {
+  background: #f78f46;
+  color: white;
+
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+}
+
+
+ol > li:hover::before {
+	background: #a3521b;
+	color: #e17e3b;
+}
