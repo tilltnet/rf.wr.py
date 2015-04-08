@@ -104,8 +104,8 @@ ol > li:before {
     width: 50px;
 	   height: 45px;
     padding: 10px;
-    color: #ffd954;
-    background: #af8f22;
+    color: #af8f22;
+    background: #ffffff;
     font-weight: bold;
     text-align: center;
 }
@@ -120,7 +120,7 @@ ol > li:hover {
 }
 
 ol > li#playing:hover {
-  background: #f78f46;
+
   color: white;
 
   -webkit-box-shadow: none;
@@ -130,6 +130,6 @@ ol > li#playing:hover {
 
 
 ol > li:hover::before {
-	background: #a3521b;
-	color: #e17e3b;
+	background: #f78f46;
+	color: #8C4A26;
 }
