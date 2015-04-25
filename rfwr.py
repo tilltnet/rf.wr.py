@@ -220,19 +220,21 @@ def cache_cover_art(albumArtURI, cache_host):
 def didl_to_dict(tree, cache_host = ''):
     '''Returns DIDL Metadata as a list of dicts'''
     container_tts = []
-    #tree = ET.fromstring(xml_string)
+    # For each DIDL do...
     for j in range(0, len(tree)):
         container_tt = {}
+        #...extract all tags and content...
         for i in range(0,len(tree[j])):
             tag_ = tree[j][i].tag
             text_ = tree[j][i].text
             _, tag_ = tag_.split('}')
             container_tt[tag_] = text_
 
+            #...check for res-tag and get its attributes...
             if tag_ == 'res':
                 container_tt.update(tree[j][i].attrib)
+                #...make duration format nice....
                 if 'duration' in container_tt:
-
                     duration, _ = container_tt['duration'].split('.')
                     duration_split = duration.split(':')
                     if int(duration_split[0]) == 0:
