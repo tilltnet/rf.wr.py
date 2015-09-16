@@ -31,7 +31,7 @@ Create a folder in your home directory, download and unzip the files to it:
 mkdir ~/rfwr
 cd ~/rfwr
 wget https://github.com/tilltnet/rf.wr.py/releases/download/0.5beta/rfwrpy-0.5beta.zip
-unzip rfwrpy0.5alpha2.zip
+unzip rfwrpy-0.5beta.zip
 ```
 
 Manually downloading and unzipping the zip File via the github website will work just as well.
